@@ -3,3 +3,12 @@
 draft/
 
 build/
+
+*.s
+*.S
+*.o
+*.a
+*.so
+*.bin
+*.asm
+*.txt
