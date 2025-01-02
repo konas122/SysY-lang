@@ -45,7 +45,7 @@ class DFG
     void release(Block *block);     // 如果块不可达, 则删除所有后继, 并继续处理所有后继
 
 public:
-    std::vector<InterInst *> codeList;  // 中间代码序列
+    std::vector<InterInst *> &codeList; // 中间代码序列
     std::vector<Block *> blocks;        // 流图的所有基本块
     std::vector<InterInst *> newCode;   // 优化生成的中间代码序列, 内存管理
 

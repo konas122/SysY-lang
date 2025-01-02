@@ -34,9 +34,9 @@ void Block::toString() {
 }
 
 
-DFG::DFG(InterCode &code) {
+DFG::DFG(InterCode &code): codeList(code.getCode())
+{
     code.markFirst();           // 标识首指令
-    codeList = code.getCode();  // 获取代码序列
     createBlocks();             // 创建基本块
     linkBlocks();               // 链接基本块关系
 }

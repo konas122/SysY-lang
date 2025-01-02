@@ -41,14 +41,14 @@ Token::~Token() {}
 Id::Id(const string& n) : Token(Tag::ID), name(n) {}
 
 string Id::toString() {
-    return Token::toString() + name;
+    return Token::toString() + " " + name;
 }
 
 
 Str::Str(const std::string & s) : Token(Tag::STR), str(s) {}
 
 string Str::toString() {
-    return string("[") + Token::toString() + "]:" + str;
+    return string("[") + Token::toString() + "]: " + str;
 }
 
 
@@ -57,7 +57,7 @@ Num::Num(int v) : Token(Tag::NUM), val(v) {};
 string Num::toString() {
     stringstream ss;
     ss << val;
-    return string("[") + Token::toString() + "]:" + ss.str();
+    return string("[") + Token::toString() + "]: " + ss.str();
 }
 
 
@@ -66,5 +66,5 @@ Char::Char(char c) : Token(Tag::CH), ch(c) {}
 string Char::toString() {
     stringstream ss;
     ss << ch;
-    return string("[") + Token::toString() + "]:" + ss.str();
+    return string("[") + Token::toString() + "]: " + ss.str();
 }

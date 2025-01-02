@@ -217,11 +217,9 @@ void Fun::optimize(SymTab *tab) {
         return;
     }
 
-//     // 常量传播: 代数化简, 条件跳转优化, 不可达代码消除
-//     ConstPropagation conPro(dfg, tab, paraVar); // 常量传播
-// #ifdef CONST
-//     conPro.propagate(); // 常量传播
-// #endif
+    // 常量传播: 代数化简, 条件跳转优化, 不可达代码消除
+    ConstPropagation conPro(dfg, tab, paraVar); // 常量传播
+    conPro.propagate(); // 常量传播
 
 //     // 冗余消除
 //     RedundElim re(dfg, tab);
@@ -245,8 +243,8 @@ void Fun::optimize(SymTab *tab) {
 // #endif
 // #endif
 
-//     // 优化结果存储在optCode
-//     dfg->toCode(optCode);   // 导出数据流图为中间代码
+    // 优化结果存储在optCode
+    dfg->toCode(optCode);   // 导出数据流图为中间代码
 
 //     // 寄存器分配和局部变量栈地址重新计算
 //     CoGraph cg(optCode, paraVar, &lv, this);    // 初始化冲突图

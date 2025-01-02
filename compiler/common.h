@@ -55,6 +55,7 @@ enum class Operator : uint16_t
     OP_MUL,
     OP_DIV,
     OP_MOD, // 加减乘除模 eg: ADD result,arg1,arg2 => result=arg1 + arg2
+
     OP_NEG, // 负 eg: NEG result,arg1 => result = -arg1
 
     // 比较运算
