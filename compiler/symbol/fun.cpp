@@ -28,10 +28,9 @@ using namespace std;
 #define SEMWARN(code, name) Error::semWarn(code, name)
 
 
-Fun::Fun(bool ext, Tag t, const string &n, const vector<Var *> &paraList) {
-    externed = ext;
-    type = t;
-    name = n;
+Fun::Fun(bool ext, Tag t, const string &n, const vector<Var *> &paraList)
+    : externed(ext), type(t), name(n)
+{
     paraVar = paraList;
     curEsp = Plat::stackBase;
     maxDepth = Plat::stackBase;
@@ -227,21 +226,13 @@ void Fun::optimize(SymTab *tab) {
 //     re.elimate();
 // #endif
 
-//     // 复写传播
-//     CopyPropagation cp(dfg);
-// #ifdef DEAD
-//     cp.propagate();
-// #endif
+    // 复写传播
+    CopyPropagation cp(dfg);
+    cp.propagate();
 
-//     // 活跃变量
-//     LiveVar lv(dfg, tab, paraVar);
-// #ifdef DEAD
-//     lv.elimateDeadCode();
-// #else
-// #ifdef REG
-//     lv.analyse();
-// #endif
-// #endif
+    // 活跃变量
+    LiveVar lv(dfg, tab, paraVar);
+    lv.elimateDeadCode();
 
     // 优化结果存储在optCode
     dfg->toCode(optCode);   // 导出数据流图为中间代码

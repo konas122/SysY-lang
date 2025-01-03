@@ -72,7 +72,7 @@ Var::Var(const vector<int> &sp, Tag t, bool ptr) {
 }
 
 // 拷贝出一个临时变量
-Var::Var(const vector<int> &sp, Var *v) {
+Var::Var(const vector<int> &sp, const Var *v) {
     clear();
     scopePath = sp;
     setType(v->type);

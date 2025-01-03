@@ -53,7 +53,7 @@ public:
     Var(Token *lt);                                     // 设定字面量
     Var(int val);                                       // 整数变量
     Var(const std::vector<int> &sp, Tag t, bool ptr);   // 临时变量
-    Var(const std::vector<int> &sp, Var *v);            // 拷贝变量
+    Var(const std::vector<int> &sp, const Var *v);      // 拷贝变量
     Var();                                              // void 变量
 
     bool setInit();     // 设定初始化, 由调用者决定初始化方式和顺序

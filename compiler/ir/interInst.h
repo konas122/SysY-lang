@@ -2,6 +2,7 @@
 #define __IR_INTERINST_H__
 
 #include "common.h"
+#include "optimize/set.h"
 
 class Var;
 class Fun;
@@ -29,8 +30,12 @@ public:
     // 数据流信息
     std::vector<double> inVals;     // 常量传播 in 集合
     std::vector<double> outVals;    // 常量传播 out 集合
-
-    bool isDead;
+    Set e_use;                      // 使用的表达式集合
+    Set e_kill;                     // 杀死的表达式集合
+    RedundInfo info;                // 冗余删除数据流信息
+    CopyInfo copyInfo;              // 复写传播数据流信息
+    LiveInfo liveInfo;              // 活跃变量数据流信息
+    bool isDead;                    // 标识指令是否是死代码
 
     InterInst(Operator op, Var *rs, Var *arg1, Var *arg2 = nullptr);    // 一般运算指令
     InterInst(Operator op, Fun *fun, Var *rs = nullptr);                // 函数调用指令, ENTRY,EXIT

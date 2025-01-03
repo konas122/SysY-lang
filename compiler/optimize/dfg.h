@@ -2,6 +2,7 @@
 #define __COMPILER_DFG_H__
 
 #include "common.h"
+#include "optimize/set.h"
 
 class Block;
 class InterInst;
@@ -23,10 +24,9 @@ public:
     // 数据流分析信息
     std::vector<double> inVals;  // 常量传播输入值集合
     std::vector<double> outVals; // 常量传播输出值集合
-
-    // RedundInfo info;    // 冗余删除数据流信息
-    // CopyInfo copyInfo;  // 复写传播数据流信息
-    // LiveInfo liveInfo;  // 活跃变量数据流信息
+    RedundInfo info;    // 冗余删除数据流信息
+    CopyInfo copyInfo;  // 复写传播数据流信息
+    LiveInfo liveInfo;  // 活跃变量数据流信息
 
     Block(const std::vector<InterInst *> &codes);
 

@@ -153,7 +153,7 @@ void DFG::toCode(list<InterInst *>& opt) {
         if (reachable(block)) {
             list<InterInst *> tmpInsts;
             for (auto inst : block->insts) {
-                if (inst->isDead) {
+                if (inst->isDead) { // 跳过死代码
                     continue;
                 }
                 tmpInsts.emplace_back(inst);

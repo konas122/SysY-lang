@@ -82,8 +82,8 @@ enum class Operator : uint16_t
 
     // 跳转
     OP_JMP,                                         // 无条件跳转 eg: JMP result => goto result
-    OP_JT,                                          // 真跳转	 eg: JT result,arg1 => if(arg1) goto result
-    OP_JF,                                          // 假跳转	 eg: JF result,arg1 => if(!arg1) goto result
+    OP_JT,                                          // 真跳转    eg: JT result,arg1 => if(arg1) goto result
+    OP_JF,                                          // 假跳转    eg: JF result,arg1 => if(!arg1) goto result
     /*OP_JG,OP_JGE,OP_JL,OP_JLE,OP_JE,*/ OP_JNE,    // 跳转 eg:JG result,arg1,arg2 => if(arg1 > arg2) goto result
     
     // 函数调用
