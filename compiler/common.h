@@ -176,4 +176,7 @@ enum class SemWarn : uint8_t
     FUN_RET_CONFLICT    // 函数返回值类型冲突
 };
 
+
+#define REG_OPT
+
 #endif

@@ -12,7 +12,7 @@ using namespace std;
 
 ConstPropagation::ConstPropagation(DFG *g, SymTab *t, vector<Var *>& paraVar)
     : tab(t), dfg(g)
-{   // TODO
+{
     glbVars = tab->getGlbVars();
     int index = 0;
 

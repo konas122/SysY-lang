@@ -16,14 +16,14 @@ public:
     void init(int size, bool val);
     void p();   // 调试输出函数
 
-    Set operator&(const Set &val);  // 交集运算
-    Set operator|(const Set &val);  // 并集运算
-    Set operator-(const Set &val);  // 差集运算
-    Set operator^(const Set &val);  // 异或运算
-    Set operator~();                // 补集运算
+    Set operator&(const Set &val) const;    // 交集运算
+    Set operator|(const Set &val) const;    // 并集运算
+    Set operator-(const Set &val) const;    // 差集运算
+    Set operator^(const Set &val) const;    // 异或运算
+    Set operator~() const;                  // 补集运算
 
-    bool operator==(const Set &val);    // 比较运算
-    bool operator!=(const Set &val);    // 比较运算
+    bool operator==(const Set &val) const;  // 比较运算
+    bool operator!=(const Set &val) const;  // 比较运算
 
     bool get(int i) const;  // 索引运算
     void set(int i);    // 置位运算
@@ -36,6 +36,8 @@ public:
 };
 
 
+// =============================================================================
+
 // 数据流传播信息
 struct TransInfo
 {
@@ -43,6 +45,8 @@ struct TransInfo
     Set out;
 };
 
+
+// =============================================================================
 
 // 冗余消除数据流信息
 struct RedundInfo
@@ -61,6 +65,8 @@ struct RedundInfo
 };
 
 
+// =============================================================================
+
 // 复写传播的数据流信息
 struct CopyInfo
 {
@@ -70,6 +76,8 @@ struct CopyInfo
     Set kill;   // 杀死复写表达式集合
 };
 
+
+// =============================================================================
 
 // 活跃变量的数据流信息
 struct LiveInfo

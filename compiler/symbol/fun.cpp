@@ -2,9 +2,6 @@
 #include "compiler.h"
 #include "platform.h"
 
-#include "iloc.h"
-#include "selector.h"
-#include "peephole.h"
 
 #include "lexer/token.h"
 
@@ -15,6 +12,7 @@
 #include "optimize/dfg.h"
 #include "optimize/alloc.h"
 #include "optimize/livevar.h"
+#include "optimize/peephole.h"
 #include "optimize/copyprop.h"
 #include "optimize/constprop.h"
 #include "optimize/redundelim.h"
@@ -222,9 +220,7 @@ void Fun::optimize(SymTab *tab) {
 
 //     // 冗余消除
 //     RedundElim re(dfg, tab);
-// #ifdef RED
 //     re.elimate();
-// #endif
 
     // 复写传播
     CopyPropagation cp(dfg);
@@ -237,9 +233,11 @@ void Fun::optimize(SymTab *tab) {
     // 优化结果存储在optCode
     dfg->toCode(optCode);   // 导出数据流图为中间代码
 
-//     // 寄存器分配和局部变量栈地址重新计算
-//     CoGraph cg(optCode, paraVar, &lv, this);    // 初始化冲突图
-//     cg.alloc();                                 // 重新分配变量的寄存器和栈帧地址
+#ifdef REG_OPT
+    // 寄存器分配和局部变量栈地址重新计算
+    CoGraph cg(optCode, paraVar, &lv, this);    // 初始化冲突图
+    cg.alloc();                                 // 重新分配变量的寄存器和栈帧地址
+#endif
 }
 
 // TODO
@@ -260,22 +258,17 @@ void Fun::genAsm(FILE *file) {
     }
 
     const char *pname = name.c_str();
-    fprintf(file, "global %s\n", pname);
+    fprintf(file, "\nglobal %s\n", pname);
     fprintf(file, "%s:\n", pname);
+    for (auto inst : code) {
+        inst->toX86(file);
+    }
 
-//     ILoc il;    // ILOC 代码
-
-//     // 将最终的中间代码转化为 ILOC 代码
-//     Selector sl(code, il);  // 指令选择器
-//     sl.select();
-//     // 对 ILOC 代码进行窥孔优化
+//     // 窥孔优化
 //     PeepHole ph(il);    // 窥孔优化器
 
-// #ifdef PEEP
 //     if (Args::opt)
 //         ph.filter();    // 优化过滤代码
-// #endif
 
-//     // 将优化后的 ILOC 代码输出为汇编代码
 //     il.outPut(file);
 }

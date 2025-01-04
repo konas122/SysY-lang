@@ -1,3 +1,6 @@
+#include <cstring>
+
+#include "platform.h"
 #include "symbol/var.h"
 #include "symbol/fun.h"
 
@@ -393,6 +396,8 @@ void InterInst::loadVar(const string &reg32, const string &reg8, Var *var) {
         return;
     }
     const char *reg = var->isChar() ? reg8.c_str() : reg32.c_str();
+    const char **regName = var->isChar() ? Plat::reg8Name : Plat::reg32Name;
+
     if (var->isChar()) {
         emit("mov %s, 0", reg32.c_str());
     }
@@ -400,6 +405,17 @@ void InterInst::loadVar(const string &reg32, const string &reg8, Var *var) {
     const string tmpName = var->getName();
     const char *name = tmpName.c_str();
     if (var->notConst()) {
+
+#ifdef REG_OPT
+        int id = var->regId;
+        if (id != -1) {
+            if (strcmp(reg, regName[id])) {
+                emit("mov %s, %s", reg, regName[id]);
+            }
+            return;
+        }
+#endif
+
         int off = var->getOffset();
         if (!off) {
             if (!var->getArray()) {
@@ -464,6 +480,17 @@ void InterInst::storeVar(const string &reg32, const string &reg8, Var *var) {
         return;
     }
     const char *reg = var->isChar() ? reg32.c_str() : reg8.c_str();
+    const char **regName = var->isChar() ? Plat::reg32Name : Plat::reg8Name;
+#ifdef REG_OPT
+    int id = var->regId;
+    if (id != -1) {
+        if (strcmp(reg, regName[id])) {
+            emit("mov %s, %s", regName[id], reg);
+        }
+        return;
+    }
+#endif
+
     const string tmpName = var->getName();
     const char *name = tmpName.c_str();
     int off = var->getOffset();
@@ -476,6 +503,7 @@ void InterInst::storeVar(const string &reg32, const string &reg8, Var *var) {
 }
 
 void InterInst::toX86(FILE *file) {
+    this->file = file;
     if (label != "") {
         fprintf(file, "%s:\n", label.c_str());
         return;
@@ -493,6 +521,7 @@ void InterInst::toX86(FILE *file) {
     case Operator::OP_EXIT:
         emit("mov esp, ebp");
         emit("pop ebp");
+        emit("ret");
         break;
     case Operator::OP_AS:
         loadVar("eax", "al", arg1);

@@ -22,7 +22,7 @@ void Set::init(int size, bool val) {
     }
 }
 
-Set Set::operator&(const Set &val) {
+Set Set::operator&(const Set &val) const {
     assert(bmList.size() == val.bmList.size());
 
     Set ret(count, 0);
@@ -32,7 +32,7 @@ Set Set::operator&(const Set &val) {
     return ret;
 }
 
-Set Set::operator|(const Set &val) {
+Set Set::operator|(const Set &val) const {
     assert(bmList.size() == val.bmList.size());
 
     Set ret(count, 0);
@@ -42,7 +42,7 @@ Set Set::operator|(const Set &val) {
     return ret;
 }
 
-Set Set::operator-(const Set &val) {
+Set Set::operator-(const Set &val) const {
     assert(bmList.size() == val.bmList.size());
 
     Set ret(count, 0);
@@ -52,7 +52,7 @@ Set Set::operator-(const Set &val) {
     return ret;
 }
 
-Set Set::operator^(const Set &val) {
+Set Set::operator^(const Set &val) const {
     assert(bmList.size() == val.bmList.size());
 
     Set ret(count, 0);
@@ -62,7 +62,7 @@ Set Set::operator^(const Set &val) {
     return ret;
 }
 
-Set Set::operator~() {
+Set Set::operator~() const {
     Set ret(count, 0);
     for (size_t i = 0; i < bmList.size(); i++) {
         ret.bmList[i] = ~bmList[i];
@@ -70,7 +70,7 @@ Set Set::operator~() {
     return ret;
 }
 
-bool Set::operator==(const Set &val) {
+bool Set::operator==(const Set &val) const {
     if (count != val.count) {
         return false;
     }
@@ -81,7 +81,7 @@ bool Set::operator==(const Set &val) {
     return true;
 }
 
-bool Set::operator!=(const Set &val) {
+bool Set::operator!=(const Set &val) const {
     if (count != val.count) {
         return true;
     }

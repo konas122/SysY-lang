@@ -12,10 +12,7 @@ LiveVar::LiveVar(DFG *g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(
 {
     varList = tab->getGlbVars();
     int glbNum = varList.size();
-    for (auto var : paraVar) {
-        varList.emplace_back(var);
-    }
-    // std::copy(paraVar.begin(), paraVar.end(), std::back_inserter(varList));
+    std::copy(paraVar.begin(), paraVar.end(), std::back_inserter(varList));
     dfg->toCode(optCode);
 
     // 统计所有的局部变量

@@ -34,6 +34,8 @@ void Block::toString() {
 }
 
 
+// =============================================================================
+
 DFG::DFG(InterCode &code): codeList(code.getCode())
 {
     code.markFirst();           // 标识首指令

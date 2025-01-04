@@ -74,7 +74,12 @@ int Scanner::scan() {
         file = nullptr;
     }
     else if (ch != '\n') {
-        colNum++;
+        if (ch == '\t') {
+            colNum += 4;
+        }
+        else {
+            colNum++;
+        }
     }
 
     lastch = ch;

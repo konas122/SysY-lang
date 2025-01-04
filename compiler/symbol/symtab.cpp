@@ -320,10 +320,10 @@ void SymTab::genAsm(const std::string &fileName) {
     genData(file);
 
     if (Args::opt) {
-        fprintf(file, "; optimized code\n");
+        fprintf(file, "\n; optimized code\n");
     }
     else {
-        fprintf(file, "; unoptimized code\n");
+        fprintf(file, "\n; unoptimized code\n");
     }
 
     fprintf(file, "section .text\n");

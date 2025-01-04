@@ -95,8 +95,8 @@ public:
     bool live;          // 记录变量的活跃性
 
     // 寄存器分配信息
-    int regId;  // 分配的寄存器编号, -1 表示在内存, 偏移地址为 offset
-    bool inMem; // 被取地址的变量的标记, 不分配寄存器
+    int regId = -1;     // 分配的寄存器编号, -1 表示在内存, 偏移地址为 offset
+    bool inMem = true;  // 被取地址的变量的标记, 不分配寄存器
 };
 
 #endif

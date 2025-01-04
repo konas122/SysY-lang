@@ -24,8 +24,8 @@ void Error::lexError(int code) {
         "词法记号不存在"
     };
     errorNum++;
-    printf("%s<%d行,%d列> 词法错误 : %s.\n", scanner->getFile().c_str(),
-           scanner->getLine(), scanner->getLine(), lexErrorTable[code]);
+    printf("%s <%d 行, %d 列> 词法错误 : %s.\n", scanner->getFile().c_str(),
+           scanner->getLine(), scanner->getCol(), lexErrorTable[code]);
 }
 
 void Error::synError(int code, Token *t) {
@@ -48,19 +48,18 @@ void Error::synError(int code, Token *t) {
     };
     errorNum++;
     if (code % 2 == 0) {    // lost
-        printf("%s<第%d行> 语法错误: 在 %s 之前丢失 %s .\n",
+        printf("%s <第 %d 行> 语法错误: 在 %s 之前丢失 %s .\n",
                scanner->getFile().c_str(), scanner->getLine(),
                t->toString().c_str(), synErrorTable[code / 2]);
     }
     else {  // wrong
-        printf("%s<第%d行> 语法错误: 在 %s 处没有正确匹配 %s .\n",
+        printf("%s <第 %d 行> 语法错误: 在 %s 处没有正确匹配 %s .\n",
                scanner->getFile().c_str(), scanner->getLine(),
                t->toString().c_str(), synErrorTable[code / 2]);
     }
 }
 
-void Error::semError(int code, string name)
-{
+void Error::semError(int code, const string &name) {
     // 语义错误信息串
     static const char *semErrorTable[] = {
         "变量重定义", // 附加名称信息
@@ -80,20 +79,19 @@ void Error::semError(int code, string name)
         "表达式运算对象不能是基本类型",
         "表达式运算对象不是基本类型",
         "数组索引运算类型错误",
-        "void的函数返回值不能参与表达式运算",
-        "break语句不能出现在循环或 switch 语句之外",
-        "continue不能出现在循环之外",
-        "return语句和函数返回值类型不匹配"
+        "void 的函数返回值不能参与表达式运算",
+        "break 语句不能出现在循环或 switch 语句之外",
+        "continue 不能出现在循环之外",
+        "return 语句和函数返回值类型不匹配"
     };
     errorNum++;
     printf("%s <第 %d 行> 语义错误: %s %s.\n",
            scanner->getFile().c_str(), scanner->getLine(), name.c_str(), semErrorTable[code]);
 }
 
-void Error::semWarn(int code, string name) {
+void Error::semWarn(int code, const string &name) {
     // 语义警告信息串
-    static const char *semWarnTable[] =
-    {
+    static const char *semWarnTable[] = {
         "函数参数列表类型冲突", // 附加名称信息
         "函数返回值类型不精确匹配"
     };
