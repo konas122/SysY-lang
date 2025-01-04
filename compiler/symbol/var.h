@@ -34,7 +34,7 @@ class Var
 
     // 附加信息
     int size;   // 变量的大小
-    int offset; // 局部变量, 参数变量的栈帧偏移, 默认值 0 为无效值——表示全局变量
+    int offset; // 局部变量, 参数变量的栈帧偏移, 默认值 0 为无效值 (表示全局变量)
 
     void setExtern(bool ext);           // 设置 extern
     void setType(Tag t);                // 设置类型

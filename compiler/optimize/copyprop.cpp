@@ -127,7 +127,8 @@ void CopyPropagation::propagate() {
             Var *newArg2 = find(inst->copyInfo.in, arg2);
             inst->replace(op, rs, newArg1, newArg2);    // 不论是否是新变量, 都更新指令
         }
-        else if (op == Operator::OP_JT || op == Operator::OP_JF || op == Operator::OP_ARG || op == Operator::OP_RETV) {                                                 // 条件表达式,参数表达式，返回表达式
+        // 条件表达式, 参数表达式, 返回表达式
+        else if (op == Operator::OP_JT || op == Operator::OP_JF || op == Operator::OP_ARG || op == Operator::OP_RETV) {
             Var *newArg1 = find(inst->copyInfo.in, arg1);
             inst->setArg1(newArg1); // 更新参数变量/返回值
         }

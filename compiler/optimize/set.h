@@ -55,8 +55,8 @@ struct RedundInfo
     TransInfo available;    // 可用表达式集合
     TransInfo postponable;  // 可后延表达式集合
     TransInfo used;         // 被使用表达式集合
-    Set earliest;           // 最前放置表达式集合：earliest(B)=anticipated(B).in-available(B).in
-    Set latest;             // 最后放置表达式集合：latest(B)=(earliest(B) | postponable(B).in) &
+    Set earliest;           // 最前放置表达式集合: earliest(B)=anticipated(B).in-available(B).in
+    Set latest;             // 最后放置表达式集合: latest(B)=(earliest(B) | postponable(B).in) &
                             // (e_use(B) | ~(&( earliest(B.succ[i]) | postponable(B.succ[i]).in )))
     TransInfo dom;  // 基本块的前驱集合
     int index = -1; // 基本块的索引
@@ -84,8 +84,8 @@ struct LiveInfo
 {
     Set in;     // 输入集合
     Set out;    // 输出集合
-    Set use;    // 使用变量集合——变量的使用先与定值
-    Set def;    // 定值变量集合——变量的定值先与使用
+    Set use;    // 使用变量集合 (变量的使用先与定值)
+    Set def;    // 定值变量集合 (变量的定值先与使用)
 };
 
 #endif

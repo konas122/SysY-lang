@@ -13,6 +13,13 @@ using namespace std;
 #define SEMERROR(code, name) Error::semError(code,name)
 
 
+static const char *entryAsm = "\nglobal _start\n\
+_start:\n\
+\tcall main\n\
+\tmov ebx, eax\n\
+\tmov eax, 1\n\
+\tint 0x80\n";
+
 Var *SymTab::voidVar = nullptr;
 Var *SymTab::zero = nullptr;
 Var *SymTab::one = nullptr;
@@ -326,9 +333,21 @@ void SymTab::genAsm(const std::string &fileName) {
         fprintf(file, "\n; unoptimized code\n");
     }
 
+    bool mainFlag = false;
     fprintf(file, "section .text\n");
-    for (size_t i = 0; i < funList.size(); i++) {
-        funTab[funList[i]]->genAsm(file);
+    for (const auto &fun : funList) {
+        if (fun == "main") {
+            mainFlag = true;
+        }
+        funTab[fun]->genAsm(file);
     }
+
+    if (mainFlag == false) {
+        cout << "缺少 main 主函数" << endl;
+    }
+    else {
+        fprintf(file, "%s", entryAsm);
+    }
+
     fclose(file);
 }

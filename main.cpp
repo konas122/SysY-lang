@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
             Args::opt = true;
             Args::showBlock = true;
         }
-        else if (!strcmp(opt, "-o")) {
+        else if (!strcmp(opt, "-opt")) {
             Args::opt = true;
         }
         else if (!strcmp(opt, "-h")) {
@@ -47,14 +47,32 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (srcfiles.size() == 0) {
-        return 0;
+    if (Args::showHelp) {
+        cout << "CIT: Compile In Time (SysYlang)" << endl;
+        cout << "命令格式: cit 源文件[源文件] [选项]\n"
+                "选项: \n"
+                "\t-opt\t\t# 执行优化\n"
+                "\t-char\t\t# 显示文件字符\n"
+                "\t-token\t\t# 显示词法记号\n"
+                "\t-symbol\t\t# 显示符号表信息\n"
+                "\t-ir\t\t# 显示中间代码\n"
+                "\t-or\t\t# 显示优化后的中间代码\n"
+                "\t-block\t\t# 显示基本块和流图关系\n"
+                "\t-h\t\t# 显示帮助信息\n";
+    }
+
+    if (srcfiles.size() == 0 && !Args::showHelp) {
+        cout << "命令格式错误! (使用 -h 选项查看帮助)" << endl;
+        return 255;
     }
 
     Compiler compiler;
     for (auto file : srcfiles) {
         string filename(file);
         compiler.compile(filename);
+        int error = Error::getErrorNum();
+        int warn = Error::getWarnNum();
+        cout << "Compile Done: Error=" << error << ", Warn=" << warn << "." << endl;
     }
 
     return 0;
