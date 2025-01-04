@@ -231,11 +231,9 @@ int &CoGraph::getEsp(const vector<int> &path) {
 
 // 为不能着色的变量分配栈帧地址
 void CoGraph::stackAlloc() {
-    int base = Plat::stackBase_protect; // 寄存器分配后需要保护现场
-
     // 初始化作用域序列
-    scRoot = new Scope(0, base);    // 全局作用域, 栈起始偏移为 ebp-base
-    int max = base;
+    scRoot = new Scope(0, 0);
+    int max = 0;
 
     for (auto inst : optCode) {
         Operator op = inst->getOp();

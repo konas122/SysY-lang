@@ -11,6 +11,8 @@
 using namespace std;
 
 
+static int regMaxId = -1;
+
 void InterInst::init() {
     op = Operator::OP_NOP;
     this->result = nullptr;
@@ -391,12 +393,12 @@ Fun *InterInst::getFun() {
 #define emit(format, args...) fprintf(file, "\t" format "\n", ##args);
 
 
-void InterInst::loadVar(const string &reg32, const string &reg8, Var *var) {
+void InterInst::loadVar(const string &reg32, const string &reg16, Var *var) {
     if (!var) {
         return;
     }
-    const char *reg = var->isChar() ? reg8.c_str() : reg32.c_str();
-    const char **regName = var->isChar() ? Plat::reg8Name : Plat::reg32Name;
+    const char *reg = var->isChar() ? reg16.c_str() : reg32.c_str();
+    const char **regName = var->isChar() ? Plat::reg16Name : Plat::reg32Name;
 
     if (var->isChar()) {
         emit("mov %s, 0", reg32.c_str());
@@ -409,6 +411,7 @@ void InterInst::loadVar(const string &reg32, const string &reg8, Var *var) {
 #ifdef REG_OPT
         int id = var->regId;
         if (id != -1) {
+            regMaxId = regMaxId > id ? regMaxId : id;
             if (strcmp(reg, regName[id])) {
                 emit("mov %s, %s", reg, regName[id]);
             }
@@ -449,13 +452,28 @@ void InterInst::initVar(Var *var) {
         return;
     }
     if (!var->unInit()) {
+
+#ifdef REG_OPT
+        if (var->regId != -1) {
+            int id = var->regId;
+            regMaxId = regMaxId > id ? regMaxId : id;
+            if (var->isBase()) {
+                emit("mov %s, %d", Plat::reg32Name[id], var->getVal());
+            }
+            else {
+                emit("mov %s, %s", Plat::reg32Name[id], var->getPtrVal().c_str());
+            }
+            return;
+        }
+#endif
+
         if (var->isBase()) {
             emit("mov eax, %d", var->getVal());
         }
         else {
             emit("mov eax, %s", var->getPtrVal().c_str());
         }
-        storeVar("eax", "al", var);
+        storeVar("eax", "ax", var);
     }
 }
 
@@ -475,15 +493,16 @@ void InterInst::leaVar(const string &reg32, Var *var) {
     }
 }
 
-void InterInst::storeVar(const string &reg32, const string &reg8, Var *var) {
+void InterInst::storeVar(const string &reg32, const string &reg16, Var *var) {
     if (!var) {
         return;
     }
-    const char *reg = var->isChar() ? reg32.c_str() : reg8.c_str();
-    const char **regName = var->isChar() ? Plat::reg32Name : Plat::reg8Name;
+    const char *reg = var->isChar() ? reg32.c_str() : reg16.c_str();
+    const char **regName = var->isChar() ? Plat::reg32Name : Plat::reg16Name;
 #ifdef REG_OPT
     int id = var->regId;
     if (id != -1) {
+        regMaxId = regMaxId > id ? regMaxId : id;
         if (strcmp(reg, regName[id])) {
             emit("mov %s, %s", regName[id], reg);
         }
@@ -514,150 +533,181 @@ void InterInst::toX86(FILE *file) {
         initVar(arg1);
         break;
     case Operator::OP_ENTRY:
+        regMaxId = -1;
         emit("push ebp");
         emit("mov ebp, esp");
-        emit("sub esp, %d", getFun()->getMaxDep());
+#ifdef REG_OPT
+        if (getFun()->getName() != "main") {
+            emit("push edx");
+            emit("push edi");
+            emit("push esi");
+        }
+#endif
+        if (getFun()->getMaxDep()) {
+            emit("sub esp, %d", getFun()->getMaxDep());
+        }
         break;
     case Operator::OP_EXIT:
+        regMaxId = -1;
+        if (getFun()->getMaxDep()) {
+            emit("add esp, %d", getFun()->getMaxDep());
+        }
+#ifdef REG_OPT
+        if (getFun()->getName() != "main") {
+            emit("pop esi");
+            emit("pop edi");
+            emit("pop edx");
+        }
+#endif
         emit("mov esp, ebp");
         emit("pop ebp");
         emit("ret");
         break;
     case Operator::OP_AS:
-        loadVar("eax", "al", arg1);
-        storeVar("eax", "al", result);
+        loadVar("eax", "ax", arg1);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_ADD:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("add eax, ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_SUB:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("sub eax, ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_MUL:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("imul ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_DIV:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("idiv ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_MOD:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
+#ifdef REG_OPT
+        if (regMaxId >= 2) {
+            emit("mov ecx, edx");
+        }
+#endif
         emit("idiv ebx");
-        storeVar("edx", "dl", result);
+        storeVar("edx", "dx", result);
+#ifdef REG_OPT
+        if (regMaxId >= 2) {
+            emit("mov edx, ecx");
+        }
+#endif
         break;
     case Operator::OP_NEG:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("neg eax");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_GT:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setg cl");
-        storeVar("ecx", "cl", result);
+        emit("setg cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_GE:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setge cl");
-        storeVar("ecx", "cl", result);
+        emit("setge cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_LT:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setl cl");
-        storeVar("ecx", "cl", result);
+        emit("setl cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_LE:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setle cl");
-        storeVar("ecx", "cl", result);
+        emit("setle cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_EQU:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("sete cl");
-        storeVar("ecx", "cl", result);
+        emit("sete cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_NE:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setne cl");
-        storeVar("ecx", "cl", result);
+        emit("setne cx");
+        storeVar("ecx", "cx", result);
         break;
     case Operator::OP_NOT:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("mov ebx, 0");
         emit("cmp eax, 0");
-        emit("sete bl");
-        storeVar("ebx", "bl", result);
+        emit("sete bx");
+        storeVar("ebx", "bx", result);
         break;
     case Operator::OP_AND:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
-        emit("setne al");
-        loadVar("ebx", "bl", arg2);
+        emit("setne ax");
+        loadVar("ebx", "bx", arg2);
         emit("cmp ebx, 0");
-        emit("setne bl");
+        emit("setne bx");
         emit("add eax, ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_OR:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
-        emit("setne al");
-        loadVar("ebx", "bl", arg2);
+        emit("setne ax");
+        loadVar("ebx", "bx", arg2);
         emit("cmp ebx, 0");
-        emit("setne bl");
+        emit("setne bx");
         emit("or eax, ebx");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_JMP:
         emit("jmp %s", target->label.c_str());
         break;
     case Operator::OP_JT:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
         emit("jne %s", target->label.c_str());
         break;
     case Operator::OP_JF:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
         emit("je %s", target->label.c_str());
         break;
     case Operator::OP_JNE:
-        loadVar("eax", "al", arg1);
-        loadVar("ebx", "bl", arg2);
+        loadVar("eax", "ax", arg1);
+        loadVar("ebx", "bx", arg2);
         emit("cmp eax, ebx");
         emit("jne %s", target->label.c_str());
         break;
     case Operator::OP_ARG:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("push eax");
         break;
     case Operator::OP_PROC:
@@ -667,28 +717,28 @@ void InterInst::toX86(FILE *file) {
     case Operator::OP_CALL:
         emit("call %s", fun->getName().c_str());
         emit("add esp, %d", static_cast<int>(fun->getParaVar().size()) * 4);
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_RET:
         emit("jmp %s", target->label.c_str());
         break;
     case Operator::OP_RETV:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("jmp %s", target->label.c_str());
         break;
     case Operator::OP_LEA:
         leaVar("eax", arg1);
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
     case Operator::OP_SET:
-        loadVar("eax", "al", result);
-        loadVar("ebx", "bl", arg1);
+        loadVar("eax", "ax", result);
+        loadVar("ebx", "bx", arg1);
         emit("mov [ebx], eax");
         break;
     case Operator::OP_GET:
-        loadVar("eax", "al", arg1);
+        loadVar("eax", "ax", arg1);
         emit("mov eax, [eax]");
-        storeVar("eax", "al", result);
+        storeVar("eax", "ax", result);
         break;
 
     // `OP_NOP`
