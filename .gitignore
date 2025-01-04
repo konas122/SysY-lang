@@ -1,3 +1,5 @@
+.vs/
+.idea/
 .vscode/
 
 draft/
@@ -10,5 +12,9 @@ build/
 *.a
 *.so
 *.bin
+*.out
 *.asm
 *.txt
+
+cit
+test
