@@ -9,7 +9,7 @@ void InterCode::addInst(InterInst *inst) {
     code.emplace_back(inst);
 }
 
-void InterCode::toString() {
+void InterCode::toString() const {
     for (size_t i = 0; i < code.size(); i++) {
         code[i]->toString();
     }

@@ -30,7 +30,7 @@ public:
 
     Block(const std::vector<InterInst *> &codes);
 
-    void toString();
+    void toString() const;
 };
 
 
@@ -58,7 +58,7 @@ public:
     // 核心实现
     void toCode(std::list<InterInst *> &opt);   // 导出数据流图为中间代码
 
-    void toString();
+    void toString() const;
 };
 
 #endif

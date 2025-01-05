@@ -14,7 +14,7 @@ class Token
 public:
     Tag tag;
     Token(Tag t);
-    virtual std::string toString();
+    virtual std::string toString() const;
     virtual ~Token ();
 };
 
@@ -28,7 +28,7 @@ class Id: public Token
 public:
     std::string name;
     Id(const std::string &n);
-    virtual std::string toString();
+    virtual std::string toString() const override;
 };
 
 
@@ -41,7 +41,7 @@ class Str: public Token
 public:
     std::string str;
     Str(const std::string &s);
-    virtual std::string toString();
+    virtual std::string toString() const override;
 };
 
 
@@ -54,7 +54,7 @@ class Num: public Token
 public:
     int val;
     Num(int v);
-    virtual std::string toString();
+    virtual std::string toString() const override;
 };
 
 
@@ -67,8 +67,7 @@ class Char: public Token
 public:
     char ch;
     Char(char c);
-    virtual std::string toString();
+    virtual std::string toString() const override;
 };
-
 
 #endif

@@ -169,7 +169,7 @@ void CoGraph::regAlloc() {
     }
 }
 
-void CoGraph::printTree(Scope *root, bool tree_style) {
+void CoGraph::printTree(Scope *root, bool tree_style) const {
     if (!tree_style) {
         printf("( <%d>: %d ", root->id, root->esp);
         for (const auto child : root->children) {
@@ -183,7 +183,7 @@ void CoGraph::printTree(Scope *root, bool tree_style) {
     }
 }
 
-void CoGraph::__printTree(Scope *root, int blk, int x, int &y) {
+void CoGraph::__printTree(Scope *root, int blk, int x, int &y) const {
     // 记录打印位置
     root->x = x;
     root->y = y;
@@ -191,7 +191,7 @@ void CoGraph::__printTree(Scope *root, int blk, int x, int &y) {
     // 填充不连续的列
     if (root->parent) {
         vector<Scope *> &brother = root->parent->children;  // 兄弟节点
-        vector<Scope *>::iterator pos;
+        vector<Scope *>::const_iterator pos;
         pos = lower_bound(brother.begin(), brother.end(), root, Scope::scope_less());   // 查找位置, 一定存在
         if (pos != brother.begin()) {           // 不是第一个兄弟
             const Scope *prev = (*--pos);       // 前一个兄弟

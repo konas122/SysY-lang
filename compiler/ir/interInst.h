@@ -49,15 +49,15 @@ public:
 
     void setFirst();    // 标记首指令
 
-    bool isJcond();     // 是否条件转移指令 JT, JF, Jcond
-    bool isJmp();       // 是否直接转移指令 JMP, return
-    bool isFirst();     // 是首指令
-    bool isLb();        // 是否是标签
-    bool isDec();       // 是否是声明
-    bool isExpr();      // 是基本类型表达式运算, 可以对指针取值
-    bool unknown();     // 不确定运算结果影响的运算 (指针赋值, 函数调用)
+    bool isJcond() const;   // 是否条件转移指令 JT, JF, Jcond
+    bool isJmp() const;     // 是否直接转移指令 JMP, return
+    bool isFirst() const;   // 是首指令
+    bool isLb() const;      // 是否是标签
+    bool isDec() const;     // 是否是声明
+    bool isExpr() const;    // 是基本类型表达式运算, 可以对指针取值
+    bool unknown() const;   // 不确定运算结果影响的运算 (指针赋值, 函数调用)
 
-    Operator getOp();       // 获取操作符
+    Operator getOp() const; // 获取操作符
     void callToProc();      // 替换操作符, 用于将 CALL 转化为 PROC
     InterInst *getTarget(); // 获取跳转指令的目标指令
     Var *getResult();       // 获取返回值
@@ -66,7 +66,7 @@ public:
     std::string getLabel(); // 获取标签
     Fun *getFun();          // 获取函数对象
     void setArg1(Var *arg1);// 设置第一个参数
-    void toString();        // 输出指令
+    void toString() const;  // 输出指令
 
 public:
     void initVar(Var *var);

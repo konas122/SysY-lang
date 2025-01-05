@@ -33,7 +33,7 @@ public:
     void elimateDeadCode(int stop = false); // 死代码消除
 
     Set &getE();    // 返回空集
-    std::vector<Var*> getCoVar(const Set &liveout); // 根据提供的 liveout 集合提取优化后的变量集合 (冲突变量)
+    std::vector<Var*> getCoVar(const Set &liveout) const;   // 根据提供的 liveout 集合提取优化后的变量集合 (冲突变量)
 };
 
 #endif

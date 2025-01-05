@@ -13,7 +13,8 @@ using namespace std;
 #define SEMERROR(code, name) Error::semError(code,name)
 
 
-static const char *entryAsm = "\nglobal _start\n\
+static const char *entryAsm =
+"\nglobal _start\n\
 _start:\n\
 \tcall main\n\
 \tmov ebx, eax\n\

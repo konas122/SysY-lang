@@ -128,11 +128,11 @@ void Fun::setExtern(bool ext) {
     externed = ext;
 }
 
-bool Fun::getExtern() {
+bool Fun::getExtern() const {
     return externed;
 }
 
-Tag Fun::getType() {
+Tag Fun::getType() const {
     return type;
 }
 
@@ -144,7 +144,7 @@ vector<Var *> &Fun::getParaVar() {
     return paraVar;
 }
 
-int Fun::getMaxDep() {
+int Fun::getMaxDep() const {
     return maxDepth;
 }
 
@@ -154,11 +154,11 @@ void Fun::setMaxDep(int dep) {
     relocated = true;
 }
 
-bool Fun::isRelocated() {
+bool Fun::isRelocated() const {
     return relocated;
 }
 
-void Fun::toString() {
+void Fun::toString() const {
     printf("%s", tokenName[static_cast<int>(type)]);
     printf(" %s", name.c_str());
 
@@ -180,7 +180,7 @@ void Fun::toString() {
     }
 }
 
-void Fun::printInterCode() {
+void Fun::printInterCode() const {
     if (externed) {
         return;
     }
@@ -189,12 +189,12 @@ void Fun::printInterCode() {
     printf("--------------<%s>End---------------\n", name.c_str());
 }
 
-void Fun::printOptCode() {
+void Fun::printOptCode() const {
     if (externed) {
         return;
     }
     printf("-------------<%s>Start--------------\n", name.c_str());
-    for (list<InterInst *>::iterator i = optCode.begin(); i != optCode.end(); ++i) {
+    for (list<InterInst *>::const_iterator i = optCode.begin(); i != optCode.end(); ++i) {
         (*i)->toString();
     }
     printf("--------------<%s>End---------------\n", name.c_str());
@@ -249,7 +249,7 @@ void Fun::genAsm(FILE *file) {
     // 导出最终的代码, 如果优化则是优化后的中间代码, 否则就是普通的中间代码
     vector<InterInst *> code;
     if (Args::opt) {    // 经过优化
-        for (list<InterInst *>::iterator it = optCode.begin(); it != optCode.end(); ++it) {
+        for (list<InterInst *>::const_iterator it = optCode.begin(); it != optCode.end(); ++it) {
             code.emplace_back(*it);
         }
     }

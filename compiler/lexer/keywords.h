@@ -20,5 +20,4 @@ public:
     Tag getTag(const std::string &name);
 };
 
-
 #endif

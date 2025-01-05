@@ -51,20 +51,20 @@ public:
     void addInst(InterInst *inst);          // 添加一条中间代码
     void setReturnPoint(InterInst *inst);   // 设置函数返回点
     InterInst *getReturnPoint();            // 获取函数返回点
-    int getMaxDep();                        // 获取最大栈帧深度
+    int getMaxDep() const;                  // 获取最大栈帧深度
     void setMaxDep(int dep);                // 设置最大栈帧深度
     void optimize(SymTab *tab);             // 执行优化操作
 
-    bool getExtern();                   // 获取 extern
+    bool getExtern() const;             // 获取 extern
     void setExtern(bool ext);           // 设置 extern
-    Tag getType();                      // 获取函数类型
+    Tag getType() const;                // 获取函数类型
     std::string &getName();             // 获取名字
-    bool isRelocated();                 // 栈帧是否重定位了
+    bool isRelocated() const;           // 栈帧是否重定位了
     std::vector<Var *> &getParaVar();   // 获取参数列表, 用于为参数生成加载代码
 
-    void toString();            // 输出信息
-    void printInterCode();      // 输出中间代码
-    void printOptCode();        // 输出优化后的中间代码
+    void toString() const;      // 输出信息
+    void printInterCode() const;// 输出中间代码
+    void printOptCode() const;  // 输出优化后的中间代码
     void genAsm(FILE *file);    // 输出汇编代码
 };
 

@@ -88,7 +88,7 @@ void CopyPropagation::analyse() {
 }
 
 // 递归检测 var 赋值的源头的实现函数
-Var *CopyPropagation::__find(const Set &in, Var *var, Var *src) {
+Var *CopyPropagation::__find(const Set &in, Var *var, Var *src) const {
     if (!var) {
         return nullptr;
     }
@@ -105,7 +105,7 @@ Var *CopyPropagation::__find(const Set &in, Var *var, Var *src) {
     return var; // 找不到可替换的变量, 返回自身, 或者上层结果
 }
 
-Var *CopyPropagation::find(const Set &in, Var *var) {
+Var *CopyPropagation::find(const Set &in, Var *var) const {
     return __find(in, var, var);
 }
 

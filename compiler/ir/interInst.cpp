@@ -93,7 +93,7 @@ InterInst::~InterInst() {
     // }
 }
 
-void InterInst::toString() {
+void InterInst::toString() const {
     if (label != "") {
         printf("%s:\n", label.c_str());
         return;
@@ -324,11 +324,11 @@ void InterInst::toString() {
     printf("\n");
 }
 
-bool InterInst::isJcond() {
+bool InterInst::isJcond() const {
     return op >= Operator::OP_JT && op <= Operator::OP_JNE;
 }
 
-bool InterInst::isJmp() {
+bool InterInst::isJmp() const {
     return op == Operator::OP_JMP || op == Operator::OP_RET || op == Operator::OP_RETV;
 }
 
@@ -336,24 +336,24 @@ void InterInst::setFirst() {
     first = true;
 }
 
-bool InterInst::isFirst() {
+bool InterInst::isFirst() const {
     return first;
 }
 
-bool InterInst::isLb() {
+bool InterInst::isLb() const {
     return label != "";
 }
 
-bool InterInst::isExpr() {
+bool InterInst::isExpr() const {
     return (op >= Operator::OP_AS && (op <= Operator::OP_OR || op == Operator::OP_GET));  // && result->isBase();
 }
 
 // 不确定运算结果影响的运算 (指针赋值, 函数调用)
-bool InterInst::unknown() {
+bool InterInst::unknown() const {
     return op == Operator::OP_SET || op == Operator::OP_PROC || op == Operator::OP_CALL;
 }
 
-Operator InterInst::getOp() {
+Operator InterInst::getOp() const {
     return op;
 }
 
@@ -369,7 +369,7 @@ void InterInst::setArg1(Var *arg1) {
     this->arg1 = arg1;
 }
 
-bool InterInst::isDec() {
+bool InterInst::isDec() const {
     return op == Operator::OP_DEC;
 }
 
@@ -617,7 +617,7 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setg cx");
+        emit("setg cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_GE:
@@ -625,7 +625,7 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setge cx");
+        emit("setge cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_LT:
@@ -633,7 +633,7 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setl cx");
+        emit("setl cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_LE:
@@ -641,7 +641,7 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setle cx");
+        emit("setle cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_EQU:
@@ -649,7 +649,7 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("sete cx");
+        emit("sete cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_NE:
@@ -657,33 +657,33 @@ void InterInst::toX86(FILE *file) {
         loadVar("ebx", "bx", arg2);
         emit("mov ecx, 0");
         emit("cmp eax, ebx");
-        emit("setne cx");
+        emit("setne cl");
         storeVar("ecx", "cx", result);
         break;
     case Operator::OP_NOT:
         loadVar("eax", "ax", arg1);
         emit("mov ebx, 0");
         emit("cmp eax, 0");
-        emit("sete bx");
+        emit("sete bl");
         storeVar("ebx", "bx", result);
         break;
     case Operator::OP_AND:
         loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
-        emit("setne ax");
+        emit("setne al");
         loadVar("ebx", "bx", arg2);
         emit("cmp ebx, 0");
-        emit("setne bx");
+        emit("setne bl");
         emit("add eax, ebx");
         storeVar("eax", "ax", result);
         break;
     case Operator::OP_OR:
         loadVar("eax", "ax", arg1);
         emit("cmp eax, 0");
-        emit("setne ax");
+        emit("setne al");
         loadVar("ebx", "bx", arg2);
         emit("cmp ebx, 0");
-        emit("setne bx");
+        emit("setne bl");
         emit("or eax, ebx");
         storeVar("eax", "ax", result);
         break;

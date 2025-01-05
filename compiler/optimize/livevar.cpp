@@ -137,7 +137,7 @@ void LiveVar::analyse() {
     }
 }
 
-vector<Var *> LiveVar::getCoVar(const Set &liveout) {
+vector<Var *> LiveVar::getCoVar(const Set &liveout) const {
     vector<Var *> coVar;
     for (size_t i = 0; i < varList.size(); i++) {
         if (liveout.get(i)) {

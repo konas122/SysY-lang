@@ -31,7 +31,7 @@ const char *tokenName[] = {
 
 Token::Token(Tag t) : tag(t) {}
 
-string Token::toString() {
+string Token::toString() const {
     return tokenName[static_cast<int>(tag)];
 }
 
@@ -42,7 +42,7 @@ Token::~Token() {}
 
 Id::Id(const string& n) : Token(Tag::ID), name(n) {}
 
-string Id::toString() {
+string Id::toString() const {
     return Token::toString() + " " + name;
 }
 
@@ -51,7 +51,7 @@ string Id::toString() {
 
 Str::Str(const std::string & s) : Token(Tag::STR), str(s) {}
 
-string Str::toString() {
+string Str::toString() const {
     return string("[") + Token::toString() + "]: " + str;
 }
 
@@ -60,7 +60,7 @@ string Str::toString() {
 
 Num::Num(int v) : Token(Tag::NUM), val(v) {};
 
-string Num::toString() {
+string Num::toString() const {
     stringstream ss;
     ss << val;
     return string("[") + Token::toString() + "]: " + ss.str();
@@ -71,7 +71,7 @@ string Num::toString() {
 
 Char::Char(char c) : Token(Tag::CH), ch(c) {}
 
-string Char::toString() {
+string Char::toString() const {
     stringstream ss;
     ss << ch;
     return string("[") + Token::toString() + "]: " + ss.str();

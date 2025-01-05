@@ -19,7 +19,7 @@ class Scanner
     int lineNum;
     int colNum;
 
-    void showChar(const char ch);
+    void showChar(const char ch) const;
 
 public:
     Scanner(const std::string &name);
@@ -28,8 +28,8 @@ public:
     int scan();
 
     std::string& getFile();
-    int getLine();
-    int getCol();
+    int getLine() const;
+    int getCol() const;
 
 };
 

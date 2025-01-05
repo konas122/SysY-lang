@@ -30,7 +30,7 @@ Scanner::~Scanner() {
     }
 }
 
-void Scanner::showChar(char ch) {
+void Scanner::showChar(char ch) const {
     if (ch == -1) {
         printf("EOF");
     }
@@ -94,10 +94,10 @@ string& Scanner::getFile() {
     return fileName;
 }
 
-int Scanner::getLine() {
+int Scanner::getLine() const {
     return lineNum;
 }
 
-int Scanner::getCol() {
+int Scanner::getCol() const {
     return colNum;
 }

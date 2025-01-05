@@ -228,7 +228,7 @@ Var *Var::getInitData() {
     return initData;
 }
 
-bool Var::getExtern() {
+bool Var::getExtern() const {
     return externed;
 }
 
@@ -236,27 +236,27 @@ vector<int>& Var::getPath() {
     return scopePath;
 }
 
-Tag Var::getType() {
+Tag Var::getType() const {
     return type;
 }
 
-bool Var::isChar() {
+bool Var::isChar() const {
     return (type == Tag::KW_CHAR) && isBase();
 }
 
-bool Var::isCharPtr() {
+bool Var::isCharPtr() const {
     return (type == Tag::KW_CHAR) && !isBase();
 }
 
-bool Var::getPtr() {
+bool Var::getPtr() const {
     return isPtr;
 }
 
-string Var::getName() {
+string Var::getName() const {
     return name;
 }
 
-bool Var::getArray() {
+bool Var::getArray() const {
     return isArray;
 }
 
@@ -269,17 +269,17 @@ Var *Var::getPointer() {
 }
 
 // 获取字符指针内容
-string Var::getPtrVal() {
+string Var::getPtrVal() const {
     return ptrVal;
 }
 
 // 获取字符串常量内容
-string Var::getStrVal() {
+string Var::getStrVal() const {
     return strVal;
 }
 
 // 获取字符串常量原始内容, 将特殊字符转义
-string Var::getRawStr() {
+string Var::getRawStr() const {
     stringstream ss;
     for (size_t i = 0, chpass = 0; i < strVal.size(); ++i) {
         auto ch = strVal[i];
@@ -313,7 +313,7 @@ void Var::setLeft(bool lf) {
     isLeft = lf;
 }
 
-bool Var::getLeft() {
+bool Var::getLeft() const {
     return isLeft;
 }
 
@@ -322,45 +322,45 @@ void Var::setOffset(int off) {
     offset = off;
 }
 
-int Var::getOffset() {
+int Var::getOffset() const {
     return offset;
 }
 
-int Var::getSize() {
+int Var::getSize() const {
     return size;
 }
 
-bool Var::isVoid() {
+bool Var::isVoid() const {
     return type == Tag::KW_VOID;
 }
 
-bool Var::isBase() {
+bool Var::isBase() const {
     return !isArray && !isPtr;
 }
 
-bool Var::isRef() {
+bool Var::isRef() const {
     return !!ptr;
 }
 
-bool Var::unInit() {
+bool Var::unInit() const {
     return !inited;
 }
 
-bool Var::notConst() {
+bool Var::notConst() const {
     return !literal;
 }
 
-int Var::getVal() {
+int Var::getVal() const {
     return intVal;
 }
 
 // 是基本类型常量 (字符串除外), 没有存储在符号表, 需要单独内存管理
-bool Var::isLiteral() {
+bool Var::isLiteral() const {
     return this->literal && isBase();
 }
 
 // 输出变量的中间代码形式
-void Var::value() {
+void Var::value() const {
     if (literal) {  // 是字面量
         if (type == Tag::KW_INT) {
             printf("%d", intVal);
@@ -379,7 +379,7 @@ void Var::value() {
     }
 }
 
-void Var::toString() {
+void Var::toString() const {
     if (externed) {
         printf("externed ");
     }

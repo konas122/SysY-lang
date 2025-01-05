@@ -14,7 +14,7 @@ public:
     ~InterCode();
     void addInst(InterInst *inst);
     void markFirst();
-    void toString();
+    void toString() const;
     std::vector<InterInst *> &getCode();
 };
 

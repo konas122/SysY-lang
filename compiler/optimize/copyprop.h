@@ -23,8 +23,8 @@ class CopyPropagation
     void analyse();                 // 复写传播数据流分析
     bool translate(Block *block);   // 复写传播传递函数
 
-    Var *__find(const Set &in, Var *var, Var *src); // 递归检测 var 赋值的源头的内部实现
-    Var *find(const Set &in, Var *var);             // 递归检测 var 赋值的源头
+    Var *__find(const Set &in, Var *var, Var *src) const;   // 递归检测 var 赋值的源头的内部实现
+    Var *find(const Set &in, Var *var) const;               // 递归检测 var 赋值的源头
 
 public:
     CopyPropagation(DFG *g);

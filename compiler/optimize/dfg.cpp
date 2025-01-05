@@ -15,19 +15,19 @@ Block::Block(const vector<InterInst *> &codes)
     }
 }
 
-void Block::toString() {
+void Block::toString() const {
     printf("-----------%8p----------\n", this);
     printf("Prev: ");
-    for (list<Block *>::iterator i = prevs.begin(); i != prevs.end(); ++i) {
+    for (list<Block *>::const_iterator i = prevs.begin(); i != prevs.end(); ++i) {
         printf("%8p ", *i);
     }
     printf("\n");
     printf("Next: ");
-    for (list<Block *>::iterator i = succs.begin(); i != succs.end(); ++i) {
+    for (list<Block *>::const_iterator i = succs.begin(); i != succs.end(); ++i) {
         printf("%8p ", *i);
     }
     printf("\n");
-    for (list<InterInst *>::iterator i = insts.begin(); i != insts.end(); ++i) {
+    for (list<InterInst *>::const_iterator i = insts.begin(); i != insts.end(); ++i) {
         (*i)->toString();
     }
     printf("-----------------------------\n");
@@ -168,7 +168,7 @@ void DFG::toCode(list<InterInst *>& opt) {
     }
 }
 
-void DFG::toString() {
+void DFG::toString() const {
     for (auto block : blocks) {
         block->toString();
     }

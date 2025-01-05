@@ -76,8 +76,9 @@ class CoGraph
     void regAlloc();                                        // 寄存器分配图着色算法, 将 regNum 个寄存器着色到图上
     int &getEsp(const std::vector<int> &path);              // 根据当前变量的作用域路径获取栈帧偏移地址
     void stackAlloc();                                      // 为不能着色的变量分配栈帧地址
-    void __printTree(Scope *root, int blk, int x, int &y);  // 树形输出作用域
-    void printTree(Scope *root, bool tree_style = true);    // 封装的函数
+
+    void __printTree(Scope *root, int blk, int x, int &y) const;    // 树形输出作用域
+    void printTree(Scope *root, bool tree_style = true) const;      // 封装的函数
 
 public:
     CoGraph(std::list<InterInst *> &optCode, std::vector<Var *> &para, LiveVar *lv, Fun *f);
