@@ -29,7 +29,7 @@ Var *Var::getTrue() {
     return SymTab::one;
 }
 
-Var *Var::getStep(Var *v) {
+Var *Var::getStep(const Var *v) {
     if (v->isBase()) {
         return SymTab::one;
     }

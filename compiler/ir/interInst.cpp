@@ -393,7 +393,7 @@ Fun *InterInst::getFun() {
 #define emit(format, args...) fprintf(file, "\t" format "\n", ##args);
 
 
-void InterInst::loadVar(const string &reg32, const string &reg16, Var *var) {
+void InterInst::loadVar(const string &reg32, const string &reg16, const Var *var) {
     if (!var) {
         return;
     }
@@ -447,7 +447,7 @@ void InterInst::loadVar(const string &reg32, const string &reg16, Var *var) {
     }
 }
 
-void InterInst::initVar(Var *var) {
+void InterInst::initVar(const Var *var) {
     if (!var) {
         return;
     }
@@ -477,7 +477,7 @@ void InterInst::initVar(Var *var) {
     }
 }
 
-void InterInst::leaVar(const string &reg32, Var *var) {
+void InterInst::leaVar(const string &reg32, const Var *var) {
     if (!var) {
         return;
     }
@@ -493,7 +493,7 @@ void InterInst::leaVar(const string &reg32, Var *var) {
     }
 }
 
-void InterInst::storeVar(const string &reg32, const string &reg16, Var *var) {
+void InterInst::storeVar(const string &reg32, const string &reg16, const Var *var) {
     if (!var) {
         return;
     }

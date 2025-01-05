@@ -245,7 +245,7 @@ void SymTab::toString() {
     for (const auto &varName : varList) {
         const vector<Var *> &list = varTab[varName];
         printf("%s:\n", varName.c_str());
-        for (auto var : list) {
+        for (const auto var : list) {
             printf("\t");
             var->toString();
             printf("\n");
@@ -280,7 +280,7 @@ void SymTab::genData(FILE *file) {
 
     vector<Var *> glbVars = getGlbVars();   // 获取所有全局变量
     for (unsigned int i = 0; i < glbVars.size(); i++) {
-        Var *var = glbVars[i];
+        const Var *var = glbVars[i];
         fprintf(file, "global %s\n", var->getName().c_str());
 
         fprintf(file, "\t%s\n", var->getName().c_str());
@@ -306,8 +306,8 @@ void SymTab::genData(FILE *file) {
         }
     }
 
-    for (auto &strIt : strTab) {
-        Var *str = strIt.second;
+    for (const auto &strIt : strTab) {
+        const Var *str = strIt.second;
         fprintf(file, "\t%s db %s\n", str->getName().c_str(), str->getRawStr().c_str());
     }
 }

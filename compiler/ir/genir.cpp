@@ -465,7 +465,7 @@ Var *GenIR::genDecR(Var *val) {
     return tmp;
 }
 
-bool GenIR::typeCheck(Var *lval, Var *rval) {
+bool GenIR::typeCheck(const Var *lval, const Var *rval) {
     bool flag = false;
     if (!rval) {
         return false;

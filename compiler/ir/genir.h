@@ -93,8 +93,8 @@ public:
     void genFunTail(Fun*function);
 
     // 全局函数
-    static std::string genLb();                     // 产生唯一的标签
-    static bool typeCheck(Var *lval, Var *rval);    // 检查类型是否可以转换
+    static std::string genLb(); // 产生唯一的标签
+    static bool typeCheck(const Var *lval, const Var *rval);    // 检查类型是否可以转换
 };
 
 #endif

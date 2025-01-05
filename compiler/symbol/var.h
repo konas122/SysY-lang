@@ -44,7 +44,7 @@ class Var
     void clear();                       // 清除关键字段信息
 
 public:
-    static Var *getStep(Var *v);
+    static Var *getStep(const Var *v);
     static Var *getVoid();
     static Var *getTrue();
 

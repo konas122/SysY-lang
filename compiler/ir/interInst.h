@@ -69,10 +69,10 @@ public:
     void toString() const;  // 输出指令
 
 public:
-    void initVar(Var *var);
-    void leaVar(const std::string &reg32, Var *var);
-    void loadVar(const std::string &reg32, const std::string &reg8, Var *var);
-    void storeVar(const std::string &reg32, const std::string &reg8, Var *var);
+    void initVar(const Var *var);
+    void leaVar(const std::string &reg32, const Var *var);
+    void loadVar(const std::string &reg32, const std::string &reg8, const Var *var);
+    void storeVar(const std::string &reg32, const std::string &reg8, const Var *var);
     void toX86(FILE *file);
 };
 

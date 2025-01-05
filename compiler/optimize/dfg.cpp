@@ -65,14 +65,14 @@ void DFG::createBlocks() {
 void DFG::linkBlocks() {
     // 链接基本块顺序关系
     for (size_t i = 0; i < blocks.size() - 1; ++i) {    // 后继关系
-        InterInst *last = blocks[i]->insts.back();      // 当前基本块的最后一条指令
+        const InterInst *last = blocks[i]->insts.back();      // 当前基本块的最后一条指令
         if (!last->isJmp()) {                           // 不是直接跳转, 可能顺序执行
             blocks[i]->succs.emplace_back(blocks[i + 1]);
         }
     }
 
     for (size_t i = 1; i < blocks.size(); ++i) {        // 前驱关系
-        InterInst *last = blocks[i - 1]->insts.back();  // 前个基本块的最后一条指令
+        const InterInst *last = blocks[i - 1]->insts.back();  // 前个基本块的最后一条指令
         if (!last->isJmp()) {                           // 不是直接跳转, 可能顺序执行
             blocks[i]->prevs.emplace_back(blocks[i - 1]);
         }
@@ -169,7 +169,7 @@ void DFG::toCode(list<InterInst *>& opt) {
 }
 
 void DFG::toString() const {
-    for (auto block : blocks) {
+    for (const auto block : blocks) {
         block->toString();
     }
 }

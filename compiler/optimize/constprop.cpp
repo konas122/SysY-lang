@@ -108,8 +108,8 @@ void ConstPropagation::translate(InterInst *inst, const vector<double> &in, vect
     out = in;
     Operator op = inst->getOp();
 
-    Var *arg1 = inst->getArg1();
-    Var *arg2 = inst->getArg2();
+    const Var *arg1 = inst->getArg1();
+    const Var *arg2 = inst->getArg2();
     const Var *result = inst->getResult();
 
     if (inst->isExpr()) {
@@ -478,7 +478,7 @@ void ConstPropagation::condJmpOpt() {
             if (inst->isJcond()) {
                 Operator op = inst->getOp();
                 InterInst *tar = inst->getTarget();
-                Var *arg1 = inst->getArg1();
+                const Var *arg1 = inst->getArg1();
 
                 double cond = NAC;
                 if (arg1->index == -1) {    // 参数不在值列表, 必是常量

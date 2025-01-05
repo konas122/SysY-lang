@@ -43,7 +43,7 @@ LiveVar::LiveVar(DFG *g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(
 
         Operator op = inst->getOp();
         Var *rs = inst->getResult();
-        Var *arg1 = inst->getArg1();
+        const Var *arg1 = inst->getArg1();
         const Var *arg2 = inst->getArg2();
 
         // 常规运算
