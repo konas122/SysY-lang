@@ -321,11 +321,8 @@ void opr(int &regNum, int &type, int &len) {
         if (regNum != 0) {  // 双 reg, 将原来 reg 写入 rm 作为目的操作数, 本次写入 reg
             modrm.mod = 3;  // 双寄存器模式
             modrm.rm = modrm.reg;   // 因为统一采用 opcode rm,r 的指令格式, 比如 mov rm32,r32 就使用 0x89, 若是使用 opcode r,rm 形式则不需要
-            modrm.reg = static_cast<int>(token) - static_cast<int>(Symbol::BR_AL) - (2 - len % 4) * 8;
         }
-        else {  // 第一次出现 reg, 临时在 reg 中, 若双 reg 这次是目的寄存器, 需要交换位置
-            modrm.reg = static_cast<int>(token) - static_cast<int>(Symbol::BR_AL) - (2 - len % 4) * 8;
-        }
+        modrm.reg = (static_cast<int>(token) - static_cast<int>(Symbol::BR_AL)) % 8;
         regNum++;
     }
 }

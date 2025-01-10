@@ -5,6 +5,7 @@
 #include "elf_file.h"
 #include "semantic.h"
 
+#define PREFIX  (0x66)
 
 static uint8_t i_2opcode[] = {
 //          8 位操作数      |        32 位操作数
@@ -98,6 +99,10 @@ bool processRel(int type) {
 
 
 void gen2op(Symbol opt, int des_t, int src_t, int len) {
+    if (len == 2) {
+        writeBytes(PREFIX, 1);
+    }
+
     int index = -1;
     if (src_t == IMMD) {
         index = 3;
@@ -106,7 +111,7 @@ void gen2op(Symbol opt, int des_t, int src_t, int len) {
         index = (des_t - 2) * 2 + src_t - 2;
     }
 
-    index = (static_cast<int>(opt) - static_cast<int>(Symbol::I_MOV)) * 8 + (1 - len % 4) * 4 + index;
+    index = (static_cast<int>(opt) - static_cast<int>(Symbol::I_MOV)) * 8 + (1 - len % 2) * 4 + index;
     uint8_t opcode = i_2opcode[index];
     switch(modrm.mod) {
     case -1:    // reg32 <- imm32
@@ -170,6 +175,10 @@ void gen2op(Symbol opt, int des_t, int src_t, int len) {
 }
 
 void gen1op(Symbol opt, int opr_t, int len) {
+    if (len == 2) {
+        writeBytes(PREFIX, 1);
+    }
+
     uint8_t exchar;
     uint16_t opcode = i_1opcode[static_cast<int>(opt) - static_cast<int>(Symbol::I_CALL)];
     if (opt == Symbol::I_CALL || (opt >= Symbol::I_JMP && opt <= Symbol::I_JNE)) {

@@ -59,7 +59,7 @@ void Table::switchSeg() {
     if (scanLop == 1) {
         dataLen += (4 - dataLen % 4) % 4;
         obj.addShdr(curSeg, lb_record::curAddr);    // 新建一个段
-        if (curSeg!=".bss") {
+        if (curSeg != ".bss") {
             dataLen += lb_record::curAddr;
         }
     }

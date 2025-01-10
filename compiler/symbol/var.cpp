@@ -294,10 +294,10 @@ string Var::getRawStr() const {
         }
         else {
             if (chpass == 0) {
-                ss << "\"" << static_cast<int>(ch);
+                ss << "\"" << ch;
             }
             else {
-                ss << static_cast<int>(ch);
+                ss << ch;
             }
             if (i == strVal.size() - 1) {
                 ss << "\",";

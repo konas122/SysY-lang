@@ -5,6 +5,8 @@
 #include "compiler/error.h"
 #include "compiler/compiler.h"
 
+#include "assembler/ass.h"
+
 using namespace std;
 
 
@@ -74,6 +76,12 @@ int main(int argc, char *argv[]) {
         int warn = Error::getWarnNum();
         cout << "Compile Done: Error=" << error << ", Warn=" << warn << "." << endl;
     }
+
+    for (auto file : srcfiles) {
+        assemble(file);
+    }
+
+    // assemble("test/test1.c");
 
     return 0;
 }
