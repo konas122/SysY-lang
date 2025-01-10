@@ -81,15 +81,13 @@ int getSym() {
     }
     else if (ch >= '0' && ch <= '9') {  // 数字, 默认正数
         sym = Symbol::NUMBER;
-        int numCount = 0;   // 为数字的长度计数
-        num = 0;            // 数值迭代器
-        int reallen = 0;    // 实际数字长度
-        int f;              // getChar 返回标记
+        int numCount = 0;       // 为数字的长度计数
+        num = 0;                // 数值迭代器
+        [[maybe_unused]] int f; // getChar 返回标记
 
         if (ch != '0') {                        // DEC
             do {
-                reallen++;
-                if (numCount < numLen) {    // 数字过长部分掠去
+                if (numCount < numLen) {        // 数字过长部分掠去
                     num = 10 * num + ch - '0';
                     numCount++;
                 }

@@ -20,7 +20,7 @@ struct RelInfo
     int offset;    // 重定位位置的偏移
     string lbName; // 重定位符号的名称
     int type;      // 重定位类型 0-R_386_32: 1-R_386_PC32
-    RelInfo(string seg, int addr, string lb, int t);
+    RelInfo(const string &seg, int addr, const string &lb, int t);
 };
 
 
@@ -37,25 +37,29 @@ public:
     vector<RelInfo *> relTab;
 
     // 辅助数据
-    char *shstrtab;     // 段表字符串表数据
-    int shstrtabSize;   // 段表字符串表长
-    char *strtab;       // 字符串表数据
-    int strtabSize;     // 字符串表长
+    char *shstrtab = nullptr;   // 段表字符串表数据
+    int shstrtabSize = 0;       // 段表字符串表长
+    char *strtab = nullptr; // 字符串表数据
+    int strtabSize = 0;     // 字符串表长
     vector<Elf32_Rel *> relTextTab, relDataTab;
 
 public:
 	Elf_file();
-    int getSegIndex(string segName);        // 获取指定段名在段表下标
-    int getSymIndex(string symName);        // 获取指定符号名在符号表下标
-    void addShdr(string sh_name, int size);
-    void addShdr(string sh_name, Elf32_Word sh_type, Elf32_Word sh_flags, Elf32_Addr sh_addr, Elf32_Off sh_offset,
-                 Elf32_Word sh_size, Elf32_Word sh_link, Elf32_Word sh_info, Elf32_Word sh_addralign,
-                 Elf32_Word sh_entsize);    // 添加一个段表项
+    int getSegIndex(const string &segName);     // 获取指定段名在段表下标
+    int getSymIndex(const string &symName);     // 获取指定符号名在符号表下标
+    void addShdr(const string &sh_name, int size);
+    void addShdr(const string &sh_name,
+                Elf32_Word sh_type, Elf32_Word sh_flags,
+                Elf32_Addr sh_addr, Elf32_Off sh_offset,
+                Elf32_Word sh_size, Elf32_Word sh_link,
+                Elf32_Word sh_info, Elf32_Word sh_addralign,
+                Elf32_Word sh_entsize);    // 添加一个段表项
     void addSym(lb_record *lb);
-    RelInfo *addRel(string seg, int addr, string lb, int type); // 添加一个重定位项, 相同段的重定位项连续 (一般是先是.rel.text后.rel.data)
-    void padSeg(string first, string second);                   // 填充段间的空隙
-    void assmObj();                                             // 组装文件
-    void writeElfTail();                                        // 输出文件尾部
+    RelInfo *addRel(const string &seg, int addr,
+                    const string &lb, int type);            // 添加一个重定位项, 相同段的重定位项连续 (一般是先是.rel.text后.rel.data)
+    void padSeg(const string &first, const string &second); // 填充段间的空隙
+    void assmObj();                                         // 组装文件
+    void writeElfTail();                                    // 输出文件尾部
 	void writeElf();
 	void printAll();	
 	~Elf_file();

@@ -51,7 +51,7 @@ public:
     std::vector<Block *> blocks;        // 流图的所有基本块
     std::vector<InterInst *> newCode;   // 优化生成的中间代码序列, 内存管理
 
-    DFG(InterCode &code);
+    explicit DFG(InterCode &code);
     ~DFG();
     void delLink(Block *begin, Block *end); // 删除块间联系, 如果块不可达, 则删除所有后继联系
 

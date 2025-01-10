@@ -53,7 +53,10 @@ class GenIR
     Var *genDecR(Var *val);     // 右自减
 
 public:
-    GenIR(SymTab &tab); // 重置内部数据
+    GenIR(const GenIR &rhs) = delete;
+    GenIR &operator=(const GenIR &rhs) = delete;
+
+    explicit GenIR(SymTab &tab);    // 重置内部数据
 
     Var *genAssign(Var *val);
 

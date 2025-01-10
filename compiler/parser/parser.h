@@ -93,6 +93,9 @@ class Parser
     void recovery(bool cond, SynError lost, SynError wrong); // 错误修复
 
 public:
+    Parser(const Parser &rhs) = delete;
+    Parser &operator=(const Parser &rhs) = delete;
+
     // 构造与初始化
     Parser(Lexer &lex, SymTab &tab, GenIR &inter);
 

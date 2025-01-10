@@ -81,6 +81,9 @@ class CoGraph
     void printTree(Scope *root, bool tree_style = true) const;      // 封装的函数
 
 public:
+    CoGraph(const CoGraph &rhs) = delete;
+    CoGraph &operator=(const CoGraph &rhs) = delete;
+
     CoGraph(std::list<InterInst *> &optCode, std::vector<Var *> &para, LiveVar *lv, Fun *f);
     ~CoGraph();
     void alloc();

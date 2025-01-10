@@ -20,7 +20,11 @@ class Error
     static Scanner *scanner;
 
 public:
-    Error(Scanner *sc);
+    Error() = delete;
+    Error(const Error &rhs) = delete;
+    Error &operator=(const Error &rhs) = delete;
+
+    explicit Error(Scanner *sc);
 
     static int errorNum;
     static int warnNum;

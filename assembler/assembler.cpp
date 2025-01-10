@@ -9,6 +9,7 @@ bool showAss = false;
 
 string finName;
 
+
 void assemble(const string &filename) {
     int pos = filename.rfind(".c");
     finName = filename.substr(0, pos);

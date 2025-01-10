@@ -34,6 +34,9 @@ public:
     static Var *one;
     static Var *four;
 
+    SymTab(const SymTab &rhs) = delete;
+    SymTab &operator=(const SymTab &rhs) = delete;
+
     SymTab();
     ~SymTab();
 

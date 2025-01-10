@@ -4,11 +4,11 @@
 #include "elf_file.h"
 
 
-void lbtail(string lbName);
+void lbtail(const string &lbName);
 void inst();
-void basetail(string lbName, int times);
+void basetail(const string &lbName, int times);
 int len();
-void values(string lbName, int times, int len);
+void values(const string &lbName, int times, int len);
 void type(list<int> &cont, int len);
 void valtail(list<int> &cont, int len);
 void opr(int &regNum, int &type, int &len);
@@ -37,9 +37,8 @@ int nextToken() {
         wait = 0;   // 还原
         return 0;
     }
-    int flag = 0;
     while (1) {
-        flag = getSym();
+        int flag = getSym();
         if (sym == Symbol::Null || sym == Symbol::EXCEP) {  // 无效符号掠过
             if (flag == -1) {
                 token = Symbol::Null;
@@ -120,7 +119,7 @@ void program() {
  *          |  COLON
  *          |  <basetail>
  */
-void lbtail(string lbName) {
+void lbtail(const string &lbName) {
     nextToken();
     switch(token) {
     case Symbol::A_TIMES:
@@ -150,7 +149,7 @@ void lbtail(string lbName) {
 /**
  * <basetail> -> <len> <values>
  */
-void basetail(string lbName, int times) {
+void basetail(const string &lbName, int times) {
     int l = len();
     values(lbName, times, l);
 }
@@ -181,7 +180,7 @@ int len() {
 /**
  * <values> -> <type> <valtail>
  */
-void values(string lbName, int times, int len) {
+void values(const string &lbName, int times, int len) {
     list<int> cont;
     type(cont, len);
     valtail(cont, len);

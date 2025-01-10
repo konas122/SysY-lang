@@ -29,7 +29,7 @@ static uint16_t i_1opcode[] = {
 };
 
 
-static uint8_t i_0opcode[]= {
+static uint8_t i_0opcode[] = {
     0xc3    // ret
 };
 

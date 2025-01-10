@@ -50,8 +50,8 @@ public:
 
     Var(const std::vector<int> &sp, bool ext, Tag t, bool ptr, const std::string &name, Var *init = nullptr);   // 变量
     Var(const std::vector<int> &sp, bool ext, Tag t, const std::string &name, int len);                         // 数组
-    Var(Token *lt);                                     // 设定字面量
-    Var(int val);                                       // 整数变量
+    explicit Var(Token *lt);                            // 设定字面量
+    explicit Var(int val);                              // 整数变量
     Var(const std::vector<int> &sp, Tag t, bool ptr);   // 临时变量
     Var(const std::vector<int> &sp, const Var *v);      // 拷贝变量
     Var();                                              // void 变量

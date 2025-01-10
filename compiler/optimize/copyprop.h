@@ -27,7 +27,7 @@ class CopyPropagation
     Var *find(const Set &in, Var *var) const;               // 递归检测 var 赋值的源头
 
 public:
-    CopyPropagation(DFG *g);
+    explicit CopyPropagation(DFG *g);
     void propagate();   // 执行复写传播
 };
 

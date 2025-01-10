@@ -5,12 +5,12 @@
 Table table;    // 符号表全局对象
 int lb_record::curAddr = 0x00000000;
 
-lb_record::lb_record(string n, bool ex) {
-    lbName = n;
+lb_record::lb_record(const string &n, bool ex)
+    : segName(curSeg), lbName(n)
+{
     addr = lb_record::curAddr;
     externed = ex;
     isEqu = false;
-    segName = curSeg;
     times = 0;
     len = 0;
     if (ex) {
@@ -19,9 +19,10 @@ lb_record::lb_record(string n, bool ex) {
     }
 }
 
-lb_record::lb_record(string n, int a) { // L equ 1
-    lbName = n;
-    segName = curSeg;
+// L equ 1
+lb_record::lb_record(const string &n, int a)
+    : segName(curSeg), lbName(n)
+{
     addr = a;
     isEqu = true;
     externed = false;
@@ -29,13 +30,13 @@ lb_record::lb_record(string n, int a) { // L equ 1
     len = 0;
 }
 
-lb_record::lb_record(string n, int t, int l, list<int> &c) {    // L times 10 dw 10,"1234"
-    lbName = n;
+// L times 10 dw 10,"1234"
+lb_record::lb_record(const string &n, int t, int l, const list<int> &c)
+    : segName(curSeg), lbName(n), cont(c)
+{
     addr = lb_record::curAddr;
-    segName = curSeg;
     isEqu = false;
     times = t;
-    cont = c;
     len = l;
 
     externed = false;
@@ -68,7 +69,7 @@ void Table::switchSeg() {
 }
 
 void Table::exportSyms() {
-    for (auto &pair : lb_map) {
+    for (const auto &pair : lb_map) {
         lb_record *lr = pair.second;
         if (!lr->isEqu) {
             obj.addSym(lr);

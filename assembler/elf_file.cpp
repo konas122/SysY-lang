@@ -7,19 +7,16 @@
 Elf_file obj;
 
 
-RelInfo::RelInfo(string seg, int addr, string lb, int t) {
-    offset = addr;
-    tarSeg = seg;
-    lbName = lb;
-    type = t;
-}
+RelInfo::RelInfo(const string &seg, int addr, const string &lb, int t)
+    : tarSeg(seg), offset(addr), lbName(lb), type(t)
+{ }
 
 
 Elf_file::Elf_file() {
     addShdr("", 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-int Elf_file::getSegIndex(string segName) {
+int Elf_file::getSegIndex(const string &segName) {
     int index = 0;
     for (size_t i = 0; i < shdrNames.size(); ++i) {
         if (shdrNames[i] == segName) {
@@ -30,7 +27,7 @@ int Elf_file::getSegIndex(string segName) {
     return index;
 }
 
-int Elf_file::getSymIndex(string symName) {
+int Elf_file::getSymIndex(const string &symName) {
     int index = 0;
     for (size_t i = 0; i < symNames.size(); ++i) {
         if (symNames[i] == symName) {
@@ -41,7 +38,7 @@ int Elf_file::getSymIndex(string symName) {
     return index;
 }
 
-void Elf_file::addShdr(string sh_name, int size) {
+void Elf_file::addShdr(const string &sh_name, int size) {
     int off = 52 + dataLen;
     if (sh_name == ".text") {
         addShdr(sh_name, SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR, 0, off, size, 0, 0, 4, 0);
@@ -54,9 +51,10 @@ void Elf_file::addShdr(string sh_name, int size) {
     }
 }
 
-void Elf_file::addShdr(string sh_name, Elf32_Word sh_type, Elf32_Word sh_flags, Elf32_Addr sh_addr, Elf32_Off sh_offset,
-                       Elf32_Word sh_size, Elf32_Word sh_link, Elf32_Word sh_info, Elf32_Word sh_addralign,
-                       Elf32_Word sh_entsize) // 添加一个段表项
+void Elf_file::addShdr(const string &sh_name,
+    Elf32_Word sh_type, Elf32_Word sh_flags, Elf32_Addr sh_addr, Elf32_Off sh_offset,
+    Elf32_Word sh_size, Elf32_Word sh_link, Elf32_Word sh_info, Elf32_Word sh_addralign,
+    Elf32_Word sh_entsize)  // 添加一个段表项
 {
     Elf32_Shdr *sh = new Elf32_Shdr();
     sh->sh_name = 0;
@@ -75,7 +73,6 @@ void Elf_file::addShdr(string sh_name, Elf32_Word sh_type, Elf32_Word sh_flags, 
 
 void Elf_file::addSym(lb_record *lb) {
     bool glb = lb->global;
-    string name = lb->lbName;
 
     if (lb->segName == "") {
         glb = lb->externed;
@@ -103,7 +100,7 @@ void Elf_file::addSym(lb_record *lb) {
 }
 
 
-RelInfo *Elf_file::addRel(string seg, int addr, string lb, int type) {
+RelInfo *Elf_file::addRel(const string &seg, int addr, const string &lb, int type) {
     RelInfo *rel = new RelInfo(seg, addr, lb, type);
     relTab.emplace_back(rel);
     return rel;
@@ -142,30 +139,30 @@ void Elf_file::assmObj() {
 	int curOff = 52 + dataLen;  // header + (.text+pad+.data+pad) 数据偏移, .shstrtab 偏移
     shstrtabSize = 51;
 
-    char *str = shstrtab = new char[shstrtabSize];
+    char *tmpStr = shstrtab = new char[shstrtabSize];
     int idx = 0;
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
     shstrIndex[".rel.text"] = idx;
-    strcpy(str + idx, ".rel.text");
+    strcpy(tmpStr + idx, ".rel.text");
     shstrIndex[".text"] = idx + 4;
     idx += 10;
     shstrIndex[""] = idx - 1;
     shstrIndex[".rel.data"] = idx;
-    strcpy(str + idx, ".rel.data");
+    strcpy(tmpStr + idx, ".rel.data");
     shstrIndex[".data"] = idx + 4;
     idx += 10;
     shstrIndex[".bss"] = idx;
-    strcpy(str + idx, ".bss");
+    strcpy(tmpStr + idx, ".bss");
     idx += 5;
     shstrIndex[".shstrtab"] = idx;
-    strcpy(str + idx, ".shstrtab");
+    strcpy(tmpStr + idx, ".shstrtab");
     idx += 10;
     shstrIndex[".symtab"] = idx;
-    strcpy(str + idx, ".symtab");
+    strcpy(tmpStr + idx, ".symtab");
     idx += 8;
     shstrIndex[".strtab"] = idx;
-    strcpy(str + idx, ".strtab");
+    strcpy(tmpStr + idx, ".strtab");
     idx += 8;
 
     // 添加 .shstrtab
@@ -191,12 +188,12 @@ void Elf_file::assmObj() {
     addShdr(".strtab", SHT_STRTAB, 0, 0, curOff, strtabSize, SHN_UNDEF, 0, 1, 0);   // .strtab
 
     // 填充 strtab 数据
-    str = strtab = new char[strtabSize];
+    tmpStr = strtab = new char[strtabSize];
 
     // 串表与符号表名字更新
     for (size_t i = 0, idx = 0; i < symNames.size(); ++i) {
         symTab[symNames[i]]->st_name = idx;
-        strcpy(str + idx, symNames[i].c_str());
+        strcpy(tmpStr + idx, symNames[i].c_str());
         idx += (symNames[i].length() + 1);
     }
     // 处理重定位表
@@ -250,8 +247,8 @@ void Elf_file::writeElf() {
 }
 
 // 填充段间的空隙
-void Elf_file::padSeg(string first, string second) {
-    char pad[1] = {0};
+void Elf_file::padSeg(const string &first, const string &second) {
+    const char pad[1] = {0};
     int padNum = shdrTab[second]->sh_offset - (shdrTab[first]->sh_offset + shdrTab[first]->sh_size);
     if (padNum <= 0) {
         return;
@@ -265,13 +262,13 @@ void Elf_file::writeElfTail() {
     fwrite(shstrtab, shstrtabSize, 1, fout);    // .shstrtab
 
     for (size_t i = 0; i < shdrNames.size(); ++i) {     // 段表
-        Elf32_Shdr *sh = shdrTab[shdrNames[i]];
+        const Elf32_Shdr *sh = shdrTab[shdrNames[i]];
         fwrite(sh, ehdr.e_shentsize, 1, fout);
     }
 
     for (size_t i = 0; i < symNames.size(); ++i) {      // 符号表
-        Elf32_Sym *sym = symTab[symNames[i]];
-        fwrite(sym, sizeof(Elf32_Sym), 1, fout);
+        const Elf32_Sym *tmpSym = symTab[symNames[i]];
+        fwrite(tmpSym, sizeof(Elf32_Sym), 1, fout);
     }
 
     fwrite(strtab, strtabSize, 1, fout);        // .strtab

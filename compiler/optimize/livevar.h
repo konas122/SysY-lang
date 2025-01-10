@@ -27,6 +27,9 @@ class LiveVar
     bool translate(Block* block);   // 活跃变量传递函数
 
 public:
+    LiveVar(const LiveVar &rhs) = delete;
+    LiveVar &operator=(const LiveVar &rhs) = delete;
+
     LiveVar(DFG *g, SymTab *t, const std::vector<Var *> &paraVar);
 
     void analyse(); // 活跃变量数据流分析

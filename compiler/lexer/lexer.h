@@ -16,7 +16,7 @@ class Lexer
     bool scan(char need = 0);
 
 public:
-    Lexer(Scanner &sc);
+    explicit Lexer(Scanner &sc);
     ~Lexer();
 
     Lexer(const Lexer &rhs) = delete;
