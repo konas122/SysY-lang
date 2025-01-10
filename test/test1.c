@@ -1,3 +1,5 @@
+int g = 10;
+
 int fun()
 {
 	int a = 1, b = a + 2, c = a * b, d = b * c, e = 10;
@@ -25,5 +27,5 @@ int main() {
 		j = fun();
 	}
 
-	return i = j;
+	return (i = j) + g;
 }

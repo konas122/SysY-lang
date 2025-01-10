@@ -1,3 +1,6 @@
+AR = ar
+ARFLAGS = rcs
+
 CXX = g++
 CXXFLAGS = -g -Wno-deprecated -DDEBUG -I compiler -Wall
 
@@ -6,14 +9,25 @@ NPROC = $(shell nproc)
 BUILD_DIR = build
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
-SRC = $(notdir $(shell find compiler assembler linker -name '*.cpp'))
-OBJS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SRC))
-OBJS += $(MAIN_OBJ)
+STATIC_OBJS = $(BUILD_DIR)/compiler.a $(BUILD_DIR)/assembler.a
+OBJS = $(MAIN_OBJ) $(STATIC_OBJS)
 
 
 compiler:
+	@if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
+	@if [ ! -d $(BUILD_DIR)/compiler ]; then mkdir $(BUILD_DIR)/compiler; fi
 	@$(MAKE) -C compiler -j $(NPROC)
 	@echo
+
+assembler:
+	@if [ ! -d $(BUILD_DIR)/assembler ]; then mkdir $(BUILD_DIR)/assembler; fi
+	@$(MAKE) -C assembler -j $(NPROC)
+	@echo
+
+
+$(BUILD_DIR)/%.a: $(BUILD_DIR)/%/*.o
+	@$(AR) $(ARFLAGS) $@ $^
+	@echo "    AR    " $(notdir $@)
 
 $(MAIN_OBJ): main.cpp
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -24,10 +38,11 @@ $(EXE): $(OBJS)
 	@echo "    LD    " $@
 
 
-all: compiler $(EXE)
+all: compiler assembler $(EXE)
 
 clean:
-	@rm -f $(EXE) $(OBJS) $(MAIN_OBJ)
+	@rm -f $(EXE)
+	@rm -rf $(BUILD_DIR)/*
 
 
-.PHONY: all compiler
+.PHONY: all compiler assembler

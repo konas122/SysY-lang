@@ -12,7 +12,6 @@ using namespace std;
 
 #define SEMERROR(code, name) Error::semError(code,name)
 
-
 static const char *entryAsm =
 "\nglobal _start\n\
 _start:\n\
@@ -276,14 +275,13 @@ void SymTab::printOptCode() {
 }
 
 void SymTab::genData(FILE *file) {
-    fprintf(file, "section .data\n");
+    fprintf(file, "\nsection .data\n");
 
     vector<Var *> glbVars = getGlbVars();   // 获取所有全局变量
     for (unsigned int i = 0; i < glbVars.size(); i++) {
         const Var *var = glbVars[i];
         fprintf(file, "global %s\n", var->getName().c_str());
-
-        fprintf(file, "\t%s\n", var->getName().c_str());
+        fprintf(file, "\t%s ", var->getName().c_str());
 
         int typeSize = var->getType() == Tag::KW_CHAR ? 1 : 4;
         if (var->getArray()) {
@@ -310,6 +308,7 @@ void SymTab::genData(FILE *file) {
         const Var *str = strIt.second;
         fprintf(file, "\t%s db %s\n", str->getName().c_str(), str->getRawStr().c_str());
     }
+    fprintf(file, "\nsection .bss\n");
 }
 
 // TODO
@@ -324,9 +323,6 @@ void SymTab::genAsm(const std::string &fileName) {
     }
     FILE *file = fopen(newName.c_str(), "w"); // 创建输出文件
 
-    // 生成数据段
-    genData(file);
-
     if (Args::opt) {
         fprintf(file, "\n; optimized code\n");
     }
@@ -334,21 +330,13 @@ void SymTab::genAsm(const std::string &fileName) {
         fprintf(file, "\n; unoptimized code\n");
     }
 
-    bool mainFlag = false;
     fprintf(file, "section .text\n");
     for (const auto &fun : funList) {
-        if (fun == "main") {
-            mainFlag = true;
-        }
         funTab[fun]->genAsm(file);
     }
+    fprintf(file, "%s", entryAsm);
 
-    if (mainFlag == false) {
-        cout << "缺少 main 主函数" << endl;
-    }
-    else {
-        fprintf(file, "%s", entryAsm);
-    }
+    genData(file);  // 生成数据段
 
     fclose(file);
 }

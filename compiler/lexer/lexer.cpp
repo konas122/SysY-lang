@@ -111,7 +111,7 @@ Token *Lexer::tokenize() {
             }
             else {
                 scan();
-                if (ch == 'x') {    // HEX
+                if (ch == 'x' || ch == 'X') {    // HEX
                     scan();
                     if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f')) {
                         do {
@@ -133,7 +133,7 @@ Token *Lexer::tokenize() {
                         t = new Token(Tag::ERR);
                     }
                 }
-                else if (ch == 'b') {   // BIN
+                else if (ch == 'b' || ch == 'B') {   // BIN
                     scan();
                     if (ch >= '0' && ch <= '1') {
                         do {

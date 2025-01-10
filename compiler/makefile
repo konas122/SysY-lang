@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -g -Wno-deprecated -DDEBUG -I . -Wall
-BUILD_DIR = ../build
+BUILD_DIR = ../build/compiler
 
 SRC = $(shell find . -name '*.cpp')
 FILENAME = $(notdir $(SRC))
