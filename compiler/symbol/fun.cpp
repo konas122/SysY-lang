@@ -70,7 +70,7 @@ bool Fun::match(Fun *f) {
     for (size_t i = 0; i < paraVar.size(); ++i) {
         if (GenIR::typeCheck(paraVar[i], f->paraVar[i])) {
             if (paraVar[i]->getType() != f->paraVar[i]->getType()) {
-                SEMWARN(static_cast<int>(SemWarn::FUN_DEC_CONFLICT), name);
+                SEMWARN(cast_int(SemWarn::FUN_DEC_CONFLICT), name);
             }
         }
         else {
@@ -79,7 +79,7 @@ bool Fun::match(Fun *f) {
     }
 
     if (type != f->type) {
-        SEMWARN(static_cast<int>(SemWarn::FUN_RET_CONFLICT), name);
+        SEMWARN(cast_int(SemWarn::FUN_RET_CONFLICT), name);
     }
 
     return true;
@@ -159,7 +159,7 @@ bool Fun::isRelocated() const {
 }
 
 void Fun::toString() const {
-    printf("%s", tokenName[static_cast<int>(type)]);
+    printf("%s", tokenName[cast_int(type)]);
     printf(" %s", name.c_str());
 
     printf("(");

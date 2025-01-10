@@ -149,7 +149,7 @@ void Var::setExtern(bool ext) {
 void Var::setType(Tag t) {
     type = t;
     if (type == Tag::KW_VOID) {
-        SEMERROR(static_cast<int>(SemError::VOID_VAR), "");
+        SEMERROR(cast_int(SemError::VOID_VAR), "");
         type = Tag::KW_INT;
     }
     if (!externed && type == Tag::KW_INT) {
@@ -180,7 +180,7 @@ void Var::setName(const string &n) {
 
 void Var::setArray(int len) {
     if (len <= 0) {
-        SEMERROR(static_cast<int>(SemError::ARRAY_LEN_INVALID), name);
+        SEMERROR(cast_int(SemError::ARRAY_LEN_INVALID), name);
         return;
     }
     isArray = true;
@@ -198,7 +198,7 @@ bool Var::setInit() {
     }
     inited = false;             // 默认初始化失败
     if (externed) {             // 声明不允许初始化
-        SEMERROR(static_cast<int>(SemError::DEC_INIT_DENY), name);
+        SEMERROR(cast_int(SemError::DEC_INIT_DENY), name);
     }
     else if (init->literal) {   // 使用常量初始化
         inited = true;          // 初始化成功
@@ -211,7 +211,7 @@ bool Var::setInit() {
     }
     else {                      // 初始值不是常量
         if (scopePath.size() == 1) {
-            SEMERROR(static_cast<int>(SemError::GLB_INIT_ERR), name);
+            SEMERROR(cast_int(SemError::GLB_INIT_ERR), name);
         }
         else {
             return true;        // 被初始化变量是局部变量
@@ -285,10 +285,10 @@ string Var::getRawStr() const {
         auto ch = strVal[i];
         if (ch == '\n' || ch == '\t' || ch == '\"' || ch == '\0') {
             if (chpass == 0) {
-                ss << static_cast<int>(ch) << ",";
+                ss << cast_int(ch) << ",";
             }
             else {
-                ss << "\"," << static_cast<int>(ch) << ",";
+                ss << "\"," << cast_int(ch) << ",";
             }
             chpass = 0;
         }
@@ -383,7 +383,7 @@ void Var::toString() const {
     if (externed) {
         printf("externed ");
     }
-    printf("%s", tokenName[static_cast<int>(type)]);
+    printf("%s", tokenName[cast_int(type)]);
     if (isPtr) {
         printf("*");
     }

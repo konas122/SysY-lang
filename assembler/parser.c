@@ -201,7 +201,7 @@ void type(list<int> &cont, int len) {
     case Symbol::STRINGS:
         for (int i = 0;; i++) {
             if (str[i] != 0) {
-                cont.emplace_back(static_cast<unsigned char>(str[i]));
+                cont.emplace_back(static_cast<uint8_t>(str[i]));
             }
             else {
                 break;
@@ -291,11 +291,11 @@ void opr(int &regNum, int &type, int &len) {
 
     switch(token) {
     case Symbol::NUMBER:
-        type = IMMD;
+        type = cast_int(OP_TYPE::IMMD);
         instr.imm32 = num;
         break;
     case Symbol::IDENT:
-        type = IMMD;
+        type = cast_int(OP_TYPE::IMMD);
         name += id;
         lr = table.getlb(name);
         instr.imm32 = lr->addr;
@@ -304,24 +304,24 @@ void opr(int &regNum, int &type, int &len) {
         }
         break;
     case Symbol::LBRAC:
-        type = MEMR;
+        type = cast_int(OP_TYPE::MEMR);
         BACK;
         mem();
         break;
     case Symbol::SUBS: // 负立即数
-        type = IMMD;
+        type = cast_int(OP_TYPE::IMMD);
         match(Symbol::NUMBER);
         instr.imm32 = -num;
         break;
     default:
-        type = REGS;
+        type = cast_int(OP_TYPE::REGS);
         BACK;
         len = reg();
         if (regNum != 0) {  // 双 reg, 将原来 reg 写入 rm 作为目的操作数, 本次写入 reg
             modrm.mod = 3;  // 双寄存器模式
             modrm.rm = modrm.reg;   // 因为统一采用 opcode rm,r 的指令格式, 比如 mov rm32,r32 就使用 0x89, 若是使用 opcode r,rm 形式则不需要
         }
-        modrm.reg = (static_cast<int>(token) - static_cast<int>(Symbol::BR_AL)) % 8;
+        modrm.reg = (cast_int(token) - cast_int(Symbol::BR_AL)) % 8;
         regNum++;
     }
 }
@@ -414,7 +414,7 @@ void regaddr(Symbol baseReg, const int type) {
         }
         else {
             modrm.mod = 0;
-            modrm.rm = static_cast<int>(baseReg) - static_cast<int>(Symbol::BR_AL) - (1 - type % 4) * 8;
+            modrm.rm = cast_int(baseReg) - cast_int(Symbol::BR_AL) - (1 - type % 4) * 8;
         }
         BACK;
         return;
@@ -450,7 +450,7 @@ void regaddrtail(Symbol baseReg, const int type, Symbol sign) {
             modrm.mod = 2;
             instr.setDisp(num, 4);
         }
-        modrm.rm = static_cast<int>(baseReg) - static_cast<int>(Symbol::BR_AL) - (1 - type % 4) * 8;
+        modrm.rm = cast_int(baseReg) - cast_int(Symbol::BR_AL) - (1 - type % 4) * 8;
 
         if (baseReg == Symbol::DR_ESP) {    // sib
             modrm.rm = 4;   // 引导 SIB
@@ -465,8 +465,8 @@ void regaddrtail(Symbol baseReg, const int type, Symbol sign) {
         modrm.mod = 0;
         modrm.rm = 4;
         sib.scale = 0;
-        sib.index = static_cast<int>(token) - static_cast<int>(Symbol::BR_AL) - (1 - typei % 4) * 8;
-        sib.base = static_cast<int>(baseReg) - static_cast<int>(Symbol::BR_AL) - (1 - type % 4) * 8;
+        sib.index = cast_int(token) - cast_int(Symbol::BR_AL) - (1 - typei % 4) * 8;
+        sib.base = cast_int(baseReg) - cast_int(Symbol::BR_AL) - (1 - type % 4) * 8;
     }
 }
 
@@ -493,5 +493,5 @@ void regaddrtail(Symbol baseReg, const int type, Symbol sign) {
  *  <addr>      ->  NUMBER | IDENT | <reg> <regaddr>
  *  <regaddr>   ->  <off> <regaddrtail> | ^
  *  <off>       ->  ADDI | SUBS
- *  <regaddrtail>   ->	NUMBER | <reg>
+ *  <regaddrtail>   ->  NUMBER | <reg>
  */

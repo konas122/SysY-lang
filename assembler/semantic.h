@@ -9,7 +9,9 @@
 
 using namespace std;
 
-struct lb_record // 符号声明记录
+
+// 符号声明记录
+struct lb_record
 {
     static int curAddr; // 一个段内符号的偏移累加量
     string segName;     // 隶属于的段名, 三种: .text .data .bss
@@ -42,6 +44,10 @@ public:
     void exportSyms();              // 导出所有的符号到 elf
     void write();
     ~Table();
+
+    Table() = default;
+    Table(const Table &rhs) = delete;
+    Table &operator=(const Table &rhs) = delete;
 };
 
 
@@ -52,6 +58,9 @@ struct ModRM
     int rm;     // 5-7
     ModRM();
     void init();
+
+    ModRM(const ModRM &rhs) = delete;
+    ModRM &operator=(const ModRM &rhs) = delete;
 };
 
 
@@ -62,12 +71,15 @@ struct SIB
     int base;   // 5-7
     SIB();
     void init();
+
+    SIB(const SIB &rhs) = delete;
+    SIB &operator=(const SIB &rhs) = delete;
 };
 
 
 struct Inst
 {
-    unsigned char opcode;
+    uint8_t opcode;
     int disp;
     int imm32;
     int dispLen;    // 偏移的长度
@@ -75,6 +87,9 @@ struct Inst
     void init();
     void setDisp(int d, int len);   // 设置 disp, 自动检测 disp 长度 (符号) , 及时是无符号地址值也无妨
     void writeDisp();
+
+    Inst(const Inst &rhs) = delete;
+    Inst &operator=(const Inst &rhs) = delete;
 };
 
 #endif

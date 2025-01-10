@@ -64,7 +64,7 @@ enum class Operator : uint16_t
     OP_LT,
     OP_LE,
     OP_EQU,
-    OP_NE,  // 大小等 eg: GT result,arg1,arg2 => result=arg1 > arg2
+    OP_NE,  // 大小等 eg: GT result,arg1,arg2 => result=arg1>arg2
 
     // 逻辑运算
     OP_NOT, // 非 eg: NOT result,arg1 => result=!arg1
@@ -72,8 +72,8 @@ enum class Operator : uint16_t
     OP_OR,  // 与或 eg: AND result,arg1,arg2 => result=arg1 && arg2
 
     // 数组运算
-    // OP_INDL,//索引作为左值 eg: INDL result,arg1,arg2 => arg1[arg2]=result
-    // OP_INDR,//索引作为右值 eg: INDR result,arg1,arg2 => result=arg1[arg2]
+    // OP_INDL,    // 索引作为左值 eg: INDL result,arg1,arg2 => arg1[arg2]=result
+    // OP_INDR,    // 索引作为右值 eg: INDR result,arg1,arg2 => result=arg1[arg2]
 
     // 指针运算
     OP_LEA, // 取址 eg: LEA result,arg1 => result=&arg1
@@ -81,11 +81,12 @@ enum class Operator : uint16_t
     OP_GET, // 取右值 eg: GET result,arg1 => result=*arg1
 
     // 跳转
-    OP_JMP,                                         // 无条件跳转 eg: JMP result => goto result
-    OP_JT,                                          // 真跳转    eg: JT result,arg1 => if(arg1) goto result
-    OP_JF,                                          // 假跳转    eg: JF result,arg1 => if(!arg1) goto result
-    /*OP_JG,OP_JGE,OP_JL,OP_JLE,OP_JE,*/ OP_JNE,    // 跳转 eg:JG result,arg1,arg2 => if(arg1 > arg2) goto result
-    
+    OP_JMP, // 无条件跳转 eg: JMP result => goto result
+    OP_JT,  // 真跳转    eg: JT result,arg1 => if(arg1) goto result
+    OP_JF,  // 假跳转    eg: JF result,arg1 => if(!arg1) goto result
+    OP_JNE, // 跳转 eg:JG result,arg1,arg2 => if(arg1 > arg2) goto result
+    /* OP_JG,OP_JGE,OP_JL,OP_JLE,OP_JE, */
+
     // 函数调用
     OP_ARG,     // 参数传递 eg: ARG arg1 => 传递参数arg1
     OP_PROC,    // 调用过程 eg: PROC fun => 调用fun函数,fun()
@@ -102,7 +103,7 @@ enum class LexError : uint8_t
     NUM_HEX_TYPE,       // 16 进制数没有实体数据
     CHAR_NO_R_QUTION,   // 字符没有右引号
     CHAR_NO_DATA,       // 字符没有数据
-    OR_NO_PAIR,         // ||只有一个|
+    OR_NO_PAIR,         // "||" 只有一个 "|"
     COMMENT_NO_END,     // 多行注释没有正常结束
     TOKEN_NO_EXIST      // 不存在的词法记号
 };
@@ -122,7 +123,7 @@ enum class SynError : uint8_t
     COMMA_WRONG,
     SEMICON_LOST,   // 分号
     SEMICON_WRONG,
-    ASSIGN_LOST,    //=
+    ASSIGN_LOST,    // =
     ASSIGN_WRONG,
     COLON_LOST,     // 冒号
     COLON_WRONG,
@@ -141,6 +142,7 @@ enum class SynError : uint8_t
     RBRACE_LOST,    // }
     RBRACE_WRONG
 };
+
 
 enum class SemError : uint8_t
 {
@@ -167,6 +169,7 @@ enum class SemError : uint8_t
     RETURN_ERR          // return 语句和函数返回值类型不匹配
 };
 
+
 /*
     语义警告码
 */
@@ -176,6 +179,8 @@ enum class SemWarn : uint8_t
     FUN_RET_CONFLICT    // 函数返回值类型冲突
 };
 
+
+#define cast_int(x) static_cast<int>(x)
 
 #define REG_OPT
 

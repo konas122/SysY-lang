@@ -132,11 +132,11 @@ void Elf_file::assmObj() {
     ehdr.e_phentsize = 0;
     ehdr.e_phnum = 0;
     ehdr.e_shentsize = sizeof(Elf32_Shdr);
-	ehdr.e_shnum = AllSegNames.size();
-	ehdr.e_shstrndx = 4;
-	
-    // 填充 .shstrtab 数据	
-	int curOff = 52 + dataLen;  // header + (.text+pad+.data+pad) 数据偏移, .shstrtab 偏移
+    ehdr.e_shnum = AllSegNames.size();
+    ehdr.e_shstrndx = 4;
+
+    // 填充 .shstrtab 数据
+    int curOff = 52 + dataLen;  // header + (.text+pad+.data+pad) 数据偏移, .shstrtab 偏移
     shstrtabSize = 51;
 
     char *tmpStr = shstrtab = new char[shstrtabSize];
@@ -209,11 +209,11 @@ void Elf_file::assmObj() {
 
     // 添加 .rel.text
     curOff += strtabSize;
-    addShdr(".rel.text", SHT_REL, 0, 0, curOff, relTextTab.size() * 8, getSegIndex(".symtab"), getSegIndex(".text"), 1, 8); //.rel.text
+    addShdr(".rel.text", SHT_REL, 0, 0, curOff, relTextTab.size() * 8, getSegIndex(".symtab"), getSegIndex(".text"), 1, 8); // .rel.text
 
     // 添加 .rel.data
     curOff += relTextTab.size() * 8;
-    addShdr(".rel.data", SHT_REL, 0, 0, curOff, relDataTab.size() * 8, getSegIndex(".symtab"), getSegIndex(".data"), 1, 8); //.rel.data
+    addShdr(".rel.data", SHT_REL, 0, 0, curOff, relDataTab.size() * 8, getSegIndex(".symtab"), getSegIndex(".data"), 1, 8); // .rel.data
 
     // 更新段表 name
     for (size_t i = 0; i < AllSegNames.size(); ++i) {
@@ -240,8 +240,9 @@ void Elf_file::writeElf() {
     }
 
     padSeg(".text", ".data");
-    table.write(); //.data
-    padSeg(".data", ".bss");
+    table.write();              // 输出 .data 段
+    padSeg(".data", ".bss");    // .bss不用输出, 对齐即可
+
     // .shstrtab, 段表, 符号表, .strtab, .rel.text, .rel.data
     obj.writeElfTail();
 }
@@ -273,13 +274,13 @@ void Elf_file::writeElfTail() {
 
     fwrite(strtab, strtabSize, 1, fout);        // .strtab
 
-    for (size_t i = 0; i < relTextTab.size(); ++i) {    //.rel.text
+    for (size_t i = 0; i < relTextTab.size(); ++i) {    // .rel.text
         Elf32_Rel *rel = relTextTab[i];
         fwrite(rel, sizeof(Elf32_Rel), 1, fout);
         delete rel;
     }
 
-    for (size_t i = 0; i < relDataTab.size(); ++i) { //.rel.data
+    for (size_t i = 0; i < relDataTab.size(); ++i) {    // .rel.data
         Elf32_Rel *rel = relDataTab[i];
         fwrite(rel, sizeof(Elf32_Rel), 1, fout);
         delete rel;

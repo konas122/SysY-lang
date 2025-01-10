@@ -38,11 +38,11 @@ Var *GenIR::genArray(Var *array, Var *index) {
         return nullptr;
     }
     if (array->isVoid() || index->isVoid()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_IS_VOID));
+        SEMERROR(cast_int(SemError::EXPR_IS_VOID));
         return nullptr;
     }
     if (array->isBase() || !index->isBase()) {
-        SEMERROR(static_cast<int>(SemError::ARR_TYPE_ERR));
+        SEMERROR(cast_int(SemError::ARR_TYPE_ERR));
         return index;
     }
     return genPtr(genAdd(array, index));
@@ -91,7 +91,7 @@ Var *GenIR::genTwoOp(Var *lval, Tag opt, Var *rval) {
         return nullptr;
     if (lval->isVoid() || rval->isVoid())
     {
-        SEMERROR(static_cast<int>(SemError::EXPR_IS_VOID));
+        SEMERROR(cast_int(SemError::EXPR_IS_VOID));
         return nullptr;
     }
     // 赋值单独处理
@@ -125,7 +125,7 @@ Var *GenIR::genTwoOp(Var *lval, Tag opt, Var *rval) {
     }
 
     if (!lval->isBase() || !rval->isBase()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_BASE));
+        SEMERROR(cast_int(SemError::EXPR_NOT_BASE));
         return lval;
     }
 
@@ -156,11 +156,11 @@ Var *GenIR::genTwoOp(Var *lval, Tag opt, Var *rval) {
 
 Var *GenIR::genAssign(Var *lval, Var *rval) {
     if (!lval->getLeft()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_LEFT_VAL));
+        SEMERROR(cast_int(SemError::EXPR_NOT_LEFT_VAL));
         return rval;
     }
     if (!typeCheck(lval, rval)) {
-        SEMERROR(static_cast<int>(SemError::ASSIGN_TYPE_ERR));
+        SEMERROR(cast_int(SemError::ASSIGN_TYPE_ERR));
         return rval;
     }
 
@@ -272,7 +272,7 @@ Var *GenIR::genAdd(Var *lval, Var *rval) {
         tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     }
     else {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_BASE));
+        SEMERROR(cast_int(SemError::EXPR_NOT_BASE));
         return lval;
     }
 
@@ -284,7 +284,7 @@ Var *GenIR::genAdd(Var *lval, Var *rval) {
 Var *GenIR::genSub(Var *lval, Var *rval) {
     Var *tmp = nullptr;
     if (!rval->isBase()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_BASE));
+        SEMERROR(cast_int(SemError::EXPR_NOT_BASE));
         return lval;
     }
 
@@ -328,7 +328,7 @@ Var *GenIR::genOneOpLeft(Tag opt, Var *val) {
         return nullptr;
     }
     if (val->isVoid()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_IS_VOID));
+        SEMERROR(cast_int(SemError::EXPR_IS_VOID));
         return nullptr;
     }
 
@@ -366,7 +366,7 @@ Var *GenIR::genNot(Var *val) {
 
 Var *GenIR::genMinus(Var *val) {
     if (!val->isBase()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_BASE));
+        SEMERROR(cast_int(SemError::EXPR_NOT_BASE));
         return val;
     }
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
@@ -377,7 +377,7 @@ Var *GenIR::genMinus(Var *val) {
 
 Var *GenIR::genIncL(Var *val) {
     if (!val->getLeft()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_LEFT_VAL));
+        SEMERROR(cast_int(SemError::EXPR_NOT_LEFT_VAL));
         return val;
     }
     // ++*p => t1=*p t2=t1+1 *p=t2
@@ -392,7 +392,7 @@ Var *GenIR::genIncL(Var *val) {
 
 Var *GenIR::genDecL(Var *val) {
     if (!val->getLeft()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_LEFT_VAL));
+        SEMERROR(cast_int(SemError::EXPR_NOT_LEFT_VAL));
         return val;
     }
     if (val->isRef()) {
@@ -407,7 +407,7 @@ Var *GenIR::genDecL(Var *val) {
 // 取地址语句
 Var *GenIR::genLea(Var *val) {
     if (!val->getLeft()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_LEFT_VAL));
+        SEMERROR(cast_int(SemError::EXPR_NOT_LEFT_VAL));
         return val;
     }
     if (val->isRef()) { // 类似 &*p 运算
@@ -421,7 +421,7 @@ Var *GenIR::genLea(Var *val) {
 
 Var *GenIR::genPtr(Var *val) {
     if (val->isBase()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_IS_BASE));
+        SEMERROR(cast_int(SemError::EXPR_IS_BASE));
         return val;
     }
     Var *tmp = new Var(symtab.getScopePath(), val->getType(), false);
@@ -436,11 +436,11 @@ Var *GenIR::genOneOpRight(Var *val, Tag opt) {
         return nullptr;
     }
     if (val->isVoid()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_IS_VOID));
+        SEMERROR(cast_int(SemError::EXPR_IS_VOID));
         return nullptr;
     }
     if (!val->getLeft()) {
-        SEMERROR(static_cast<int>(SemError::EXPR_NOT_LEFT_VAL));
+        SEMERROR(cast_int(SemError::EXPR_NOT_LEFT_VAL));
         return val;
     }
 
@@ -630,7 +630,7 @@ void GenIR::genBreak() {
         symtab.addInst(new InterInst(Operator::OP_JMP, tail));
     }
     else {
-        SEMERROR(static_cast<int>(SemError::BREAK_ERR));
+        SEMERROR(cast_int(SemError::BREAK_ERR));
     }
 }
 
@@ -640,7 +640,7 @@ void GenIR::genContinue() {
         symtab.addInst(new InterInst(Operator::OP_JMP, head));
     }
     else {
-        SEMERROR(static_cast<int>(SemError::CONTINUE_ERR));
+        SEMERROR(cast_int(SemError::CONTINUE_ERR));
     }
 }
 
@@ -651,7 +651,7 @@ void GenIR::genReturn(Var *ret) {
     }
     Fun *fun = symtab.getCurFun();
     if ((ret->isVoid() && fun->getType() != Tag::KW_VOID) || (ret->isBase() && fun->getType() == Tag::KW_VOID)) {
-        SEMERROR(static_cast<int>(SemError::RETURN_ERR));
+        SEMERROR(cast_int(SemError::RETURN_ERR));
         return;
     }
     InterInst *returnPoint = fun->getReturnPoint();

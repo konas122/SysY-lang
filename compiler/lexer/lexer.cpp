@@ -79,7 +79,7 @@ Token *Lexer::tokenize() {
                     }
                     else if (ch == '\n');  // do nothing
                     else if (ch == -1){
-                        LEXERROR(static_cast<int>(LexError::STR_NO_R_QUTION));
+                        LEXERROR(cast_int(LexError::STR_NO_R_QUTION));
                         t = new Token(Tag::ERR);
                         break;
                     }
@@ -88,7 +88,7 @@ Token *Lexer::tokenize() {
                     }
                 }
                 else if (ch == '\n' || ch == -1) {
-                    LEXERROR(static_cast<int>(LexError::STR_NO_R_QUTION));
+                    LEXERROR(cast_int(LexError::STR_NO_R_QUTION));
                     t = new Token(Tag::ERR);
                     break;
                 }
@@ -129,7 +129,7 @@ Token *Lexer::tokenize() {
                         } while ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f'));
                     }
                     else {
-                        LEXERROR(static_cast<int>(LexError::NUM_HEX_TYPE)); // 0x 后无数据
+                        LEXERROR(cast_int(LexError::NUM_HEX_TYPE)); // 0x 后无数据
                         t = new Token(Tag::ERR);
                     }
                 }
@@ -142,7 +142,7 @@ Token *Lexer::tokenize() {
                         } while (ch >= '0' && ch <= '1');
                     }
                     else {
-                        LEXERROR(static_cast<int>(LexError::NUM_BIN_TYPE));
+                        LEXERROR(cast_int(LexError::NUM_BIN_TYPE));
                         t = new Token(Tag::ERR);
                     }
                 }
@@ -179,7 +179,7 @@ Token *Lexer::tokenize() {
                     c = '\'';
                 }
                 else if (ch == -1 || ch == '\n') {  // 文件结束 换行
-                    LEXERROR(static_cast<int>(LexError::CHAR_NO_R_QUTION));
+                    LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
                     t=new Token(Tag::ERR);
                 }
                 else {
@@ -187,11 +187,11 @@ Token *Lexer::tokenize() {
                 }
             }
             else if (ch == '\n' || ch == -1) {
-                LEXERROR(static_cast<int>(LexError::CHAR_NO_R_QUTION));
+                LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
                 t = new Token(Tag::ERR);
             }
             else if (ch == '\'') {
-                LEXERROR(static_cast<int>(LexError::CHAR_NO_DATA));
+                LEXERROR(cast_int(LexError::CHAR_NO_DATA));
                 t = new Token(Tag::ERR);
                 scan(); // 读掉引号
             }
@@ -203,7 +203,7 @@ Token *Lexer::tokenize() {
                     t=new Char(c);
                 }
                 else {
-                    LEXERROR(static_cast<int>(LexError::CHAR_NO_R_QUTION));
+                    LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
                     t = new Token(Tag::ERR);
                 }
             }
@@ -243,7 +243,7 @@ Token *Lexer::tokenize() {
                         }
                     }
                     if (ch == -1) {     // 没正常结束注释
-                        LEXERROR(static_cast<int>(LexError::COMMENT_NO_END));
+                        LEXERROR(cast_int(LexError::COMMENT_NO_END));
                     }
                     t = new Token(Tag::ERR);
                 }
@@ -270,7 +270,7 @@ Token *Lexer::tokenize() {
             case '|':
                 t = new Token(scan('|') ? Tag::OR : Tag::ERR);
                 if (t->tag == Tag::ERR) {
-                    LEXERROR(static_cast<int>(LexError::OR_NO_PAIR));
+                    LEXERROR(cast_int(LexError::OR_NO_PAIR));
                 }
                 break;
             case '!':
@@ -317,7 +317,7 @@ Token *Lexer::tokenize() {
                 break;
             default:
                 t = new Token(Tag::ERR);
-                LEXERROR(static_cast<int>(LexError::TOKEN_NO_EXIST));
+                LEXERROR(cast_int(LexError::TOKEN_NO_EXIST));
                 scan();
             }
         }

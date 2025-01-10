@@ -85,7 +85,7 @@ void SymTab::addVar(Var *var) {
             list.emplace_back(var);
         }
         else {
-            SEMERROR(static_cast<int>(SemError::VAR_RE_DEF), var->getName());
+            SEMERROR(cast_int(SemError::VAR_RE_DEF), var->getName());
             delete var;
             return;
         }
@@ -121,7 +121,7 @@ Var *SymTab::getVar(const string &name) {
     }
 
     if (!select) {
-        SEMERROR(static_cast<int>(SemError::VAR_UN_DEC), name);
+        SEMERROR(cast_int(SemError::VAR_UN_DEC), name);
     }
 
     return select;
@@ -148,12 +148,12 @@ Fun *SymTab::getFun(const string &name, const vector<Var *> &args) {
     if (funTab.count(name)) {
         Fun *fun = funTab[name];
         if (!fun->match(args)) {
-            SEMERROR(static_cast<int>(SemError::FUN_CALL_ERR), name);
+            SEMERROR(cast_int(SemError::FUN_CALL_ERR), name);
             return nullptr;
         }
         return fun;
     }
-    SEMERROR(static_cast<int>(SemError::FUN_UN_DEC), name);
+    SEMERROR(cast_int(SemError::FUN_UN_DEC), name);
     return nullptr;
 }
 
@@ -170,7 +170,7 @@ void SymTab::decFun(Fun *fun) {
     else {
         Fun *last = funTab[fun->getName()];
         if (!last->match(fun)) {
-            SEMERROR(static_cast<int>(SemError::FUN_DEC_ERR), fun->getName());
+            SEMERROR(cast_int(SemError::FUN_DEC_ERR), fun->getName());
         }
         delete fun;
     }
@@ -178,7 +178,7 @@ void SymTab::decFun(Fun *fun) {
 
 void SymTab::defFun(Fun *fun) {
     if (fun->getExtern()) {
-        SEMERROR(static_cast<int>(SemError::EXTERN_FUN_DEF), fun->getName());
+        SEMERROR(cast_int(SemError::EXTERN_FUN_DEF), fun->getName());
         fun->setExtern(false);
     }
 
@@ -190,12 +190,12 @@ void SymTab::defFun(Fun *fun) {
         Fun *last = funTab[fun->getName()];
         if (last->getExtern()) {
             if (!last->match(fun)) {
-                SEMERROR(static_cast<int>(SemError::FUN_DEC_ERR), fun->getName());
+                SEMERROR(cast_int(SemError::FUN_DEC_ERR), fun->getName());
             }
             last->define(fun);
         }
         else {
-            SEMERROR(static_cast<int>(SemError::FUN_RE_DEF), fun->getName());
+            SEMERROR(cast_int(SemError::FUN_RE_DEF), fun->getName());
         }
         delete fun;
         fun = last;

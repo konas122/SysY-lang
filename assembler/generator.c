@@ -104,14 +104,14 @@ void gen2op(Symbol opt, int des_t, int src_t, int len) {
     }
 
     int index = -1;
-    if (src_t == IMMD) {
+    if (src_t == cast_int(OP_TYPE::IMMD)) {
         index = 3;
     }
     else {
         index = (des_t - 2) * 2 + src_t - 2;
     }
 
-    index = (static_cast<int>(opt) - static_cast<int>(Symbol::I_MOV)) * 8 + (1 - len % 2) * 4 + index;
+    index = (cast_int(opt) - cast_int(Symbol::I_MOV)) * 8 + (1 - len % 2) * 4 + index;
     uint8_t opcode = i_2opcode[index];
     switch(modrm.mod) {
     case -1:    // reg32 <- imm32
@@ -123,7 +123,7 @@ void gen2op(Symbol opt, int des_t, int src_t, int len) {
             const int reg_codes[] = {7, 5, 0, 4, 1};
             modrm.mod = 3;
             modrm.rm = modrm.reg;
-            int ret = static_cast<int>(opt) - static_cast<int>(Symbol::I_CMP);
+            int ret = cast_int(opt) - cast_int(Symbol::I_CMP);
             if (ret >= 0 && ret <= 4) {
                 modrm.reg = reg_codes[ret];
             }
@@ -180,7 +180,7 @@ void gen1op(Symbol opt, int opr_t, int len) {
     }
 
     uint8_t exchar;
-    uint16_t opcode = i_1opcode[static_cast<int>(opt) - static_cast<int>(Symbol::I_CALL)];
+    uint16_t opcode = i_1opcode[cast_int(opt) - cast_int(Symbol::I_CALL)];
     if (opt == Symbol::I_CALL || (opt >= Symbol::I_JMP && opt <= Symbol::I_JNE)) {
         if (opt != Symbol::I_CALL && opt != Symbol::I_JMP) {
             writeBytes(0x0f, 1);
@@ -204,7 +204,7 @@ void gen1op(Symbol opt, int opr_t, int len) {
         writeBytes(instr.imm32, 1);
     }
     else if (opt == Symbol::I_PUSH) {
-        if (opr_t == IMMD) {
+        if (opr_t == cast_int(OP_TYPE::IMMD)) {
             opcode = 0x68;
             writeBytes(opcode, 1);
             writeBytes(instr.imm32, 4);

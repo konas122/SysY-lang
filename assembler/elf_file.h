@@ -13,7 +13,7 @@ using namespace std;
 struct lb_record;
 
 
-//重定位信息
+// 重定位信息
 struct RelInfo
 {
     string tarSeg; // 重定位目标段
@@ -44,7 +44,7 @@ public:
     vector<Elf32_Rel *> relTextTab, relDataTab;
 
 public:
-	Elf_file();
+    Elf_file();
     int getSegIndex(const string &segName);     // 获取指定段名在段表下标
     int getSymIndex(const string &symName);     // 获取指定符号名在符号表下标
     void addShdr(const string &sh_name, int size);
@@ -53,16 +53,16 @@ public:
                 Elf32_Addr sh_addr, Elf32_Off sh_offset,
                 Elf32_Word sh_size, Elf32_Word sh_link,
                 Elf32_Word sh_info, Elf32_Word sh_addralign,
-                Elf32_Word sh_entsize);    // 添加一个段表项
+                Elf32_Word sh_entsize);         // 添加一个段表项
     void addSym(lb_record *lb);
     RelInfo *addRel(const string &seg, int addr,
                     const string &lb, int type);            // 添加一个重定位项, 相同段的重定位项连续 (一般是先是.rel.text后.rel.data)
     void padSeg(const string &first, const string &second); // 填充段间的空隙
     void assmObj();                                         // 组装文件
     void writeElfTail();                                    // 输出文件尾部
-	void writeElf();
-	void printAll();	
-	~Elf_file();
+    void writeElf();
+    void printAll();
+    ~Elf_file();
 };
 
 #endif

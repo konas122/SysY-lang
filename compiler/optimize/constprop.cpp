@@ -315,7 +315,7 @@ void ConstPropagation::algebraSimplify() {
 
                 rs = inst->outVals[result->index];
                 if (rs != UNDEF && rs != NAC) {
-                    Var *newVar = new Var(static_cast<int>(rs));
+                    Var *newVar = new Var(cast_int(rs));
                     tab->addVar(newVar);
                     inst->replace(Operator::OP_AS, result, newVar);
                 }

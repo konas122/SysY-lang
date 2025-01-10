@@ -61,10 +61,10 @@ bool Parser::match(Tag need) {
 
 void Parser::recovery(bool cond, SynError lost, SynError wrong) {
     if (cond) {
-        SYNERROR(static_cast<int>(lost), look);
+        SYNERROR(cast_int(lost), look);
     }
     else {
-        SYNERROR(static_cast<int>(wrong), look);
+        SYNERROR(cast_int(wrong), look);
         move();
     }
 }
@@ -103,7 +103,6 @@ Tag Parser::type() {
     }
     return tmp;
 }
- 
 
 /**
  * <defdata> -> ident <varrdef> | mul ident <init>
@@ -253,7 +252,7 @@ Var *Parser::paradatatail(Tag t, string &name) {
     }
     return new Var(symtab.getScopePath(), false, t, false, name);
 }
- 
+
 /**
  * <paradata> -> mul ident | ident <paradatatail>
  */

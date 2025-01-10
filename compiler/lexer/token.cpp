@@ -32,7 +32,7 @@ const char *tokenName[] = {
 Token::Token(Tag t) : tag(t) {}
 
 string Token::toString() const {
-    return tokenName[static_cast<int>(tag)];
+    return tokenName[cast_int(tag)];
 }
 
 Token::~Token() {}

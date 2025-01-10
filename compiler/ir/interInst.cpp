@@ -712,11 +712,11 @@ void InterInst::toX86(FILE *file) {
         break;
     case Operator::OP_PROC:
         emit("call %s", fun->getName().c_str());
-        emit("add esp, %d", static_cast<int>(fun->getParaVar().size()) * 4);
+        emit("add esp, %d", cast_int(fun->getParaVar().size()) * 4);
         break;
     case Operator::OP_CALL:
         emit("call %s", fun->getName().c_str());
-        emit("add esp, %d", static_cast<int>(fun->getParaVar().size()) * 4);
+        emit("add esp, %d", cast_int(fun->getParaVar().size()) * 4);
         storeVar("eax", "ax", result);
         break;
     case Operator::OP_RET:

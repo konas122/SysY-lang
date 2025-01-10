@@ -12,6 +12,7 @@ char line[maxLen];
 int chAtLine = 0;   // 当前字符列位置
 int lineLen = 0;    // 当前行的长度
 
+
 int getChar() {
     if (chAtLine >= lineLen) {  // 超出索引, 行读完,>=防止出现强制读取的bug
         chAtLine = 0;   // 字符, 行, 重新初始化
