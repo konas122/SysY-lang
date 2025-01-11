@@ -222,7 +222,7 @@ void type(list<int> &cont, int len) {
         }
         break;
     default:
-        printf("type err! [line: %d]\n",lineNum);
+        printf("type err! [line: %d]\n", lineNum);
         break;
     }
 }

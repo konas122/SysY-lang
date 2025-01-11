@@ -4,8 +4,9 @@ ARFLAGS = rcs
 CXX = g++
 CXXFLAGS = -g -Wno-deprecated -DDEBUG -I compiler -Wall
 
-EXE = cit
 NPROC = $(shell nproc)
+
+EXE = cit
 BUILD_DIR = build
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
@@ -24,6 +25,11 @@ assembler:
 	@$(MAKE) -C assembler -j $(NPROC)
 	@echo
 
+linker:
+	@if [ ! -d $(BUILD_DIR)/linker ]; then mkdir $(BUILD_DIR)/linker; fi
+	@$(MAKE) -C linker -j $(NPROC)
+	@echo
+
 
 $(BUILD_DIR)/%.a: $(BUILD_DIR)/%/*.o
 	@$(AR) $(ARFLAGS) $@ $^
@@ -38,11 +44,11 @@ $(EXE): $(OBJS)
 	@echo "    LD    " $@
 
 
-all: compiler assembler $(EXE)
+all: compiler assembler linker $(EXE)
 
 clean:
 	@rm -f $(EXE)
 	@rm -rf $(BUILD_DIR)/*
 
 
-.PHONY: all compiler assembler
+.PHONY: all compiler assembler linker

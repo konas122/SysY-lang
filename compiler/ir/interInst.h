@@ -39,7 +39,7 @@ public:
 
     InterInst(Operator op, Var *rs, Var *arg1, Var *arg2 = nullptr);    // 一般运算指令
     InterInst(Operator op, Fun *fun, Var *rs = nullptr);                // 函数调用指令, ENTRY,EXIT
-    InterInst(Operator op, Var *arg1 = nullptr);                        // 参数进栈指令, NOP
+    explicit InterInst(Operator op, Var *arg1 = nullptr);               // 参数进栈指令, NOP
     InterInst();                                                        // 产生唯一标号
     InterInst(Operator op, InterInst *tar, Var *arg1 = nullptr, Var *arg2 = nullptr);   // 条件跳转指令, return
 

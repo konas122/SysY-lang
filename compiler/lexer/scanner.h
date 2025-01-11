@@ -9,7 +9,7 @@ class Scanner
     FILE *file;
     std::string fileName;
 
-    static constexpr int BUFLEN = 512;
+    static constexpr int BUFLEN = 1024;
     char line[BUFLEN] = {0};
 
     int lineLen;    // 当前行的长度
@@ -33,7 +33,6 @@ public:
     std::string& getFile();
     int getLine() const;
     int getCol() const;
-
 };
 
 

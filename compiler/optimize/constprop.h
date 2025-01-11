@@ -23,13 +23,13 @@ class ConstPropagation
     std::vector<Var *> vars;        // 变量集合
     std::vector<Var *> glbVars;     // 全局变量的集合, G 处理函数调用等附加影响操作
     std::vector<double> boundVals;  // 边界集合, Entry.out
-    std::vector<double> initVals;   // 初值集合,B.out/B.out
+    std::vector<double> initVals;   // 初值集合, B.out/B.out
 
     void join(Block *block);        // 交汇运算
     static double join(double left, double right);  // 元素交汇运算
 
     void translate(InterInst *inst, const std::vector<double> &in, std::vector<double> &out);   // 单指令传递函数
-    bool translate(Block *block);           // 传递函数 fB
+    bool translate(Block *block);   // 传递函数 fB
 
     void analyse();         // 常量传播分析
     void algebraSimplify(); // 代数化简

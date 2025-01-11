@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define SEMERROR(code, name) Error::semError(code,name)
+#define SEMERROR(code, name) Error::semError(code, name)
 
 static const char *entryAsm =
 "\nglobal _start\n\

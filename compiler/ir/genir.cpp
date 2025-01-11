@@ -54,7 +54,7 @@ void GenIR::genPara(Var *arg) {
     }
 
     // 无条件复制参数! 传值, 不传引用!
-    // Var *newVar=new Var(symtab.getScopePath(),arg);  // 创建参数变量
+    // Var *newVar=new Var(symtab.getScopePath(), arg);    // 创建参数变量
     // symtab.addVar(newVar);   // 添加无效变量, 占领栈帧
 
     InterInst *argInst = new InterInst(Operator::OP_ARG, arg);  // push arg

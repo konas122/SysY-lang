@@ -22,7 +22,7 @@ class Fun
     std::vector<Var *> paraVar; // 形参变量列表
 
     // 临时变量地址分配
-    int maxDepth;   // 栈的最大深度, 初始 0,标识函数栈分配的最大空间
+    int maxDepth;   // 栈的最大深度, 初始 0, 标识函数栈分配的最大空间
     int curEsp;     // 当前栈指针位置, 初始化为 0, 即 ebp 存储点
     bool relocated; // 栈帧重定位标记
 

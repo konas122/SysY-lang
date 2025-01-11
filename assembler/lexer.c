@@ -228,19 +228,7 @@ int getSym() {
 
 
 #define reservedNum 62
-char reservedTable[reservedNum][idLen] =
-{
-    "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh",
-    "ax", "cx", "dx", "bx", "sp", "bp", "si", "di",
-    "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi",
-    "mov", "cmp", "sub", "add", "and", "or", "lea",         // 2p
-    "call", "int", "imul", "idiv", "neg", "inc", "dec",     // 1p
-    "jmp", "je", "jne", "jg", "jl", "jge", "jle", "jna",
-    "sete", "setne", "setg", "setge",
-    "setl", "setle", "push", "pop",
-    "ret",                                                  // 0p
-    "section", "global", "equ", "times", "db", "dw", "dd"
-};
+
 
 static std::unordered_map<std::string, Symbol> keywords = {
     {"al", Symbol::BR_AL}, {"cl", Symbol::BR_CL},
@@ -283,29 +271,8 @@ static std::unordered_map<std::string, Symbol> keywords = {
     {"db", Symbol::A_DB}, {"dw", Symbol::A_DW}, {"dd", Symbol::A_DD},
 };
 
-static Symbol reservedSymbol[reservedNum] =
-{
-    Symbol::BR_AL, Symbol::BR_CL, Symbol::BR_DL, Symbol::BR_BL, Symbol::BR_AH, Symbol::BR_CH, Symbol::BR_DH, Symbol::BR_BH,
-    Symbol::WR_AX, Symbol::WR_CX, Symbol::WR_DX, Symbol::WR_BX, Symbol::WR_SP, Symbol::WR_BP, Symbol::WR_SI, Symbol::WR_DI,
-    Symbol::DR_EAX, Symbol::DR_ECX, Symbol::DR_EDX, Symbol::DR_EBX, Symbol::DR_ESP, Symbol::DR_EBP, Symbol::DR_ESI, Symbol::DR_EDI,
-    Symbol::I_MOV, Symbol::I_CMP, Symbol::I_SUB, Symbol::I_ADD, Symbol::I_AND, Symbol::I_OR, Symbol::I_LEA, // 2P
-    Symbol::I_CALL, Symbol::I_INT, Symbol::I_IMUL, Symbol::I_IDIV,  // 1P
-    Symbol::I_NEG, Symbol::I_INC, Symbol::I_DEC,
-    Symbol::I_JMP, Symbol::I_JE, Symbol::I_JNE, Symbol::I_JG, Symbol::I_JL, Symbol::I_JGE, Symbol::I_JLE, Symbol::I_JNA,
-    Symbol::I_SETE, Symbol::I_SETNE, Symbol::I_SETG, Symbol::I_SETGE, Symbol::I_SETL, Symbol::I_SETLE,
-    Symbol::I_PUSH, Symbol::I_POP,
-    Symbol::I_RET,  // 0P
-    Symbol::A_SEC, Symbol::A_GLB, Symbol::A_EQU, Symbol::A_TIMES, Symbol::A_DB, Symbol::A_DW, Symbol::A_DD
-};
-
 
 void checkReserved() {
-    // for (int k = 0; k < reservedNum; k++) {
-    //     if (strcmp(id, reservedTable[k]) == 0) {
-    //         sym = reservedSymbol[k];
-    //         return;
-    //     }
-    // }
     if (keywords.count(id)) {
         sym = keywords[id];
         return;
