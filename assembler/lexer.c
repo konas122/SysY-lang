@@ -4,38 +4,41 @@
 void checkReserved();
 
 
-#define maxLen 80   // 文件行的最大长度
+#define maxLen 1024 // 文件行的最大长度
 char ch = ' ';      // 当前字符
 char oldCh = ' ';   // 上一个字符
 int lineNum = 0;    // 行号
-char line[maxLen];
+char buffer[maxLen];
 int chAtLine = 0;   // 当前字符列位置
 int lineLen = 0;    // 当前行的长度
 
 
 int getChar() {
-    if (chAtLine >= lineLen) {  // 超出索引, 行读完,>=防止出现强制读取的bug
-        chAtLine = 0;   // 字符, 行, 重新初始化
-        lineLen = 0;
-        lineNum++;      // 行号增加
-        ch = ' ';
-        while (ch != 10) {  // 检测行行结束
-            if (fscanf(fin, "%c", &ch) == EOF) {
-                line[lineLen] = 0; // 文件结束
-                break;
-            }
-            line[lineLen] = ch; // 循环读取一行的字符
-            lineLen++;
-            if (lineLen == maxLen) {    // 单行程序过长
-                // 不继续读就可以, 不用报错
-                break;
-            }
+    static int len = 0;
+    static int readPos = 0;
+
+    if (readPos >= len) {
+        readPos = 0;
+        len = fread(buffer, 1, maxLen, fin);
+        if (len <= 0) {
+            ch = 0;
+            return -1;
         }
     }
+
     // 正常读取
     oldCh = ch;
-    ch = line[chAtLine];
+    ch = buffer[readPos];
+    readPos++;
+
+    lineLen++;
     chAtLine++;
+
+    if (ch == '\n') {
+        lineNum++;
+        lineLen = chAtLine = 0;
+    }
+
     if (ch == 0) {
         return -1;
     }
@@ -224,7 +227,7 @@ int getSym() {
 }
 
 
-#define reservedNum 57
+#define reservedNum 62
 char reservedTable[reservedNum][idLen] =
 {
     "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh",
@@ -232,12 +235,53 @@ char reservedTable[reservedNum][idLen] =
     "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi",
     "mov", "cmp", "sub", "add", "and", "or", "lea",         // 2p
     "call", "int", "imul", "idiv", "neg", "inc", "dec",     // 1p
-    "jmp", "je", "jne", "sete", "setne", "setg", "setge",
-    "setl", "setle", "push" ,"pop",
+    "jmp", "je", "jne", "jg", "jl", "jge", "jle", "jna",
+    "sete", "setne", "setg", "setge",
+    "setl", "setle", "push", "pop",
     "ret",                                                  // 0p
     "section", "global", "equ", "times", "db", "dw", "dd"
 };
 
+static std::unordered_map<std::string, Symbol> keywords = {
+    {"al", Symbol::BR_AL}, {"cl", Symbol::BR_CL},
+    {"dl", Symbol::BR_DL}, {"bl", Symbol::BR_BL},
+    {"ah", Symbol::BR_AH}, {"ch", Symbol::BR_CH},
+    {"dh", Symbol::BR_DH}, {"bh", Symbol::BR_BH},
+
+    {"ax", Symbol::WR_AX}, {"cx", Symbol::WR_CX},
+    {"dx", Symbol::WR_DX}, {"bx", Symbol::WR_BX},
+    {"sp", Symbol::WR_SP}, {"bp", Symbol::WR_BP},
+    {"si", Symbol::WR_SI}, {"di", Symbol::WR_DI},
+
+    {"eax", Symbol::DR_EAX}, {"ecx", Symbol::DR_ECX},
+    {"edx", Symbol::DR_EDX}, {"ebx", Symbol::DR_EBX},
+    {"esp", Symbol::DR_ESP}, {"ebp", Symbol::DR_EBP},
+    {"esi", Symbol::DR_ESI}, {"edi", Symbol::DR_EDI},
+
+    {"mov", Symbol::I_MOV}, {"cmp", Symbol::I_CMP},
+    {"sub", Symbol::I_SUB}, {"add", Symbol::I_ADD},
+    {"and", Symbol::I_AND}, {"or", Symbol::I_OR},
+    {"lea", Symbol::I_LEA},
+    
+    {"call", Symbol::I_CALL}, {"int", Symbol::I_INT},
+    {"imul", Symbol::I_IMUL}, {"idiv", Symbol::I_IDIV},
+    {"neg", Symbol::I_NEG},
+    {"inc", Symbol::I_INC}, {"dec", Symbol::I_DEC},
+    {"jmp", Symbol::I_JMP}, {"je", Symbol::I_JE},
+    {"jne", Symbol::I_JNE}, {"jg", Symbol::I_JG},
+    {"jl", Symbol::I_JL}, {"jge", Symbol::I_JGE},
+    {"jle", Symbol::I_JLE}, {"jna", Symbol::I_JNA},
+    {"sete", Symbol::I_SETE}, {"setne", Symbol::I_SETNE},
+    {"setg", Symbol::I_SETG}, {"setge", Symbol::I_SETGE},
+    {"setl", Symbol::I_SETL}, {"setle", Symbol::I_SETLE},
+    {"push", Symbol::I_PUSH}, {"pop", Symbol::I_POP},
+
+    {"ret", Symbol::I_RET},
+
+    {"section", Symbol::A_SEC}, {"global", Symbol::A_GLB},
+    {"equ", Symbol::A_EQU}, {"times", Symbol::A_TIMES},
+    {"db", Symbol::A_DB}, {"dw", Symbol::A_DW}, {"dd", Symbol::A_DD},
+};
 
 static Symbol reservedSymbol[reservedNum] =
 {
@@ -247,7 +291,7 @@ static Symbol reservedSymbol[reservedNum] =
     Symbol::I_MOV, Symbol::I_CMP, Symbol::I_SUB, Symbol::I_ADD, Symbol::I_AND, Symbol::I_OR, Symbol::I_LEA, // 2P
     Symbol::I_CALL, Symbol::I_INT, Symbol::I_IMUL, Symbol::I_IDIV,  // 1P
     Symbol::I_NEG, Symbol::I_INC, Symbol::I_DEC,
-    Symbol::I_JMP, Symbol::I_JE, Symbol::I_JNE,
+    Symbol::I_JMP, Symbol::I_JE, Symbol::I_JNE, Symbol::I_JG, Symbol::I_JL, Symbol::I_JGE, Symbol::I_JLE, Symbol::I_JNA,
     Symbol::I_SETE, Symbol::I_SETNE, Symbol::I_SETG, Symbol::I_SETGE, Symbol::I_SETL, Symbol::I_SETLE,
     Symbol::I_PUSH, Symbol::I_POP,
     Symbol::I_RET,  // 0P
@@ -256,11 +300,15 @@ static Symbol reservedSymbol[reservedNum] =
 
 
 void checkReserved() {
-    for (int k = 0; k < reservedNum; k++) {
-        if (strcmp(id, reservedTable[k]) == 0) {
-            sym = reservedSymbol[k];
-            return;
-        }
+    // for (int k = 0; k < reservedNum; k++) {
+    //     if (strcmp(id, reservedTable[k]) == 0) {
+    //         sym = reservedSymbol[k];
+    //         return;
+    //     }
+    // }
+    if (keywords.count(id)) {
+        sym = keywords[id];
+        return;
     }
     sym = Symbol::IDENT; // 搜索失败, 是标识符
 }

@@ -22,7 +22,7 @@ static uint8_t i_2opcode[] = {
 
 static uint16_t i_1opcode[] = {
     0xe8, 0xcd, 0xf7, 0xf7, 0xf7, 0x40, 0x48, 0xe9, // call, int, imul, idiv, neg, inc, dec, jmp <rel32>
-    0x84, 0x85, // je, jne
+    0x84, 0x85, 0x8f, 0x8c, 0x8d, 0x8e, 0x86,       // je, jne, jg, jl, jge, jle, jna
     0x94, 0x95, 0x9f, 0x9d, 0x9c, 0x9e,             // sete, setne, setge, setl, setle
     0x50,       // push
     0x58        // pop
@@ -175,13 +175,9 @@ void gen2op(Symbol opt, int des_t, int src_t, int len) {
 }
 
 void gen1op(Symbol opt, int opr_t, int len) {
-    if (len == 2) {
-        writeBytes(PREFIX, 1);
-    }
-
     uint8_t exchar;
     uint16_t opcode = i_1opcode[cast_int(opt) - cast_int(Symbol::I_CALL)];
-    if (opt == Symbol::I_CALL || (opt >= Symbol::I_JMP && opt <= Symbol::I_JNE)) {
+    if (opt == Symbol::I_CALL || (opt >= Symbol::I_JMP && opt <= Symbol::I_JNA)) {
         if (opt != Symbol::I_CALL && opt != Symbol::I_JMP) {
             writeBytes(0x0f, 1);
         }
@@ -210,6 +206,9 @@ void gen1op(Symbol opt, int opr_t, int len) {
             writeBytes(instr.imm32, 4);
         }
         else {
+            if (len == 2) {
+                writeBytes(PREFIX, 1);
+            }
             opcode += (uint8_t)(modrm.reg);
             writeBytes(opcode, 1);
         }
@@ -223,6 +222,9 @@ void gen1op(Symbol opt, int opr_t, int len) {
             writeBytes(exchar, 1);
         }
         else {
+            if (len == 2) {
+                writeBytes(PREFIX, 1);
+            }
             opcode += (uint8_t)(modrm.reg);
             writeBytes(opcode, 1);
         }
@@ -236,6 +238,9 @@ void gen1op(Symbol opt, int opr_t, int len) {
             writeBytes(exchar, 1);
         }
         else {
+            if (len == 2) {
+                writeBytes(PREFIX, 1);
+            }
             opcode += (uint8_t)(modrm.reg);
             writeBytes(opcode, 1);
         }
@@ -244,16 +249,25 @@ void gen1op(Symbol opt, int opr_t, int len) {
         if (len == 1) {
             opcode = 0xf6;
         }
+        if (len == 2) {
+            writeBytes(PREFIX, 1);
+        }
         exchar = 0xd8;
         exchar += (uint8_t)(modrm.reg);
         writeBytes(opcode, 1);
         writeBytes(exchar, 1);
     }
     else if (opt == Symbol::I_POP) {
+        if (len == 2) {
+            writeBytes(PREFIX, 1);
+        }
         opcode += (uint8_t)(modrm.reg);
         writeBytes(opcode, 1);
     }
     else if (opt == Symbol::I_IMUL || opt == Symbol::I_IDIV) {
+        if (len == 2) {
+            writeBytes(PREFIX, 1);
+        }
         writeBytes(opcode, 1);
         if (opt == Symbol::I_IMUL) {
             exchar = 0xe8;

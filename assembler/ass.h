@@ -21,7 +21,7 @@ enum class Symbol : int
     I_CALL, I_INT,  // 1P
     I_IMUL, I_IDIV,
     I_NEG, I_INC, I_DEC,
-    I_JMP, I_JE, I_JNE,
+    I_JMP, I_JE, I_JNE, I_JG, I_JL, I_JGE, I_JLE, I_JNA,
     I_SETE, I_SETNE, I_SETG, I_SETGE, I_SETL, I_SETLE,
     I_PUSH, I_POP,
     I_RET,          // 0P
