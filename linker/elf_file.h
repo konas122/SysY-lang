@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <unordered_map>
 
+#define cast_int(x) static_cast<int>(x)
 
 struct RelItem
 {

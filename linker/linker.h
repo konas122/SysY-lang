@@ -19,6 +19,8 @@ struct Block
 };
 
 
+// =============================================================================
+
 // 将头类型的段合并为一个列表
 struct SegList
 {
@@ -29,20 +31,24 @@ struct SegList
     std::vector<Elf_file *> ownerList;  // 拥有该段的文件序列
     std::vector<Block *> blocks;        // 记录合并后的数据块序列
 
-    void allocAddr(std::string name, uint32_t &base, uint32_t &off);    // 每种类型的段计算自己的段修正后位置
-    void relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr);   // 根据提供的重定位信息重定位地址
+    void allocAddr(const std::string &name, uint32_t &base, uint32_t &off); // 每种类型的段计算自己的段修正后位置
+    void relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr);       // 根据提供的重定位信息重定位地址
     ~SegList();
 };
 
 
+// =============================================================================
+
 // 符号引用对象, 每一次外部符号引用都会产生
 struct SymLink
 {
-    std::string name; // 引用的符号名
-    Elf_file *recv;   // 引用符号文件
-    Elf_file *prov;   // 提供符号的文件, 符号未定义时必然是 NULL
+    std::string name;           // 引用的符号名
+    Elf_file *recv = nullptr;   // 引用符号文件
+    Elf_file *prov = nullptr;   // 提供符号的文件, 符号未定义时必然是 NULL
 };
 
+
+// =============================================================================
 
 #define START       "_start"    // 程序入口位置
 #define BASE_ADDR   0x08040000  // 默认加载地址
@@ -54,13 +60,13 @@ class Linker
 {
     std::vector<std::string> segNames;  // 链接关心的段
     Elf_file exe;                       // 链接后的输出文件
-    Elf_file *startOwner;               // 拥有全局符号 START/_start 的文件
+    Elf_file *startOwner = nullptr;     // 拥有全局符号 START/_start 的文件
 
 public:
-    std::vector<Elf_file *> elfs;                   // 所有目标文件对象
-    std::unordered_map<string, SegList *> segLists; // 所有合并段表序列
-    std::vector<SymLink *> symLinks;                // 所有符号引用信息, 符号解析前存储未定义的符号 prov 字段为 NULL
-    std::vector<SymLink *> symDef;                  // 所有符号定义信息 recv 字段 NULL 时标示该符号没有被任何文件引用, 否则指向本身 (同 prov)
+    std::vector<Elf_file *> elfs;                           // 所有目标文件对象
+    std::unordered_map<std::string, SegList *> segLists;    // 所有合并段表序列
+    std::vector<SymLink *> symLinks;    // 所有符号引用信息, 符号解析前存储未定义的符号 prov 字段为 NULL
+    std::vector<SymLink *> symDef;      // 所有符号定义信息 recv 字段 NULL 时标示该符号没有被任何文件引用, 否则指向本身 (同 prov)
 
 public:
     Linker();

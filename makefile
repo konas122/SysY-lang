@@ -10,7 +10,7 @@ EXE = cit
 BUILD_DIR = build
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
-STATIC_OBJS = $(BUILD_DIR)/compiler.a $(BUILD_DIR)/assembler.a
+STATIC_OBJS = $(BUILD_DIR)/compiler.a $(BUILD_DIR)/assembler.a $(BUILD_DIR)/linker.a
 OBJS = $(MAIN_OBJ) $(STATIC_OBJS)
 
 
