@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 
@@ -84,11 +85,12 @@ void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
             break;
         }
     }
+    assert(b != nullptr && "pointer b == nullptr");
     // 处理字节为 b->data[relOffset-b->offset]
     int *pAddr = reinterpret_cast<int *>(b->data + relOffset - b->offset);
     if (type == R_386_32) { // 绝对地址修正
         if (showLink) {
-            printf("绝对地址修正：原地址=%08x\t", *pAddr);
+            printf("绝对地址修正: 原地址=%08x\t", *pAddr);
         }
         *pAddr = symAddr;
         if (showLink) {
@@ -97,7 +99,7 @@ void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     }
     else if (type == R_386_PC32) {  // 相对地之修正
         if (showLink) {
-            printf("相对地址修正：原地址=%08x\t", *pAddr);
+            printf("相对地址修正: 原地址=%08x\t", *pAddr);
         }
         *pAddr = symAddr - relAddr + *pAddr;
         if (showLink) {
@@ -199,7 +201,7 @@ bool Linker::symValid() {
             else {
                 type = "符号";
             }
-            printf("文件 %s 的 %s 名 %s 未定义。\n", symLinks[i]->recv->elf_dir.c_str(), type.c_str(), symLinks[i]->name.c_str());
+            printf("文件 %s 的 %s 名 %s 未定义.\n", symLinks[i]->recv->elf_dir.c_str(), type.c_str(), symLinks[i]->name.c_str());
             flag = false;
         }
     }
@@ -332,19 +334,20 @@ void Linker::assemExe() {
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
     shstrIndex[".shstrtab"] = index;
-    strcpy(str + index, ".shstrtab");
+    strlcpy(str + index, ".shstrtab", 10);
     index += 10;
     shstrIndex[".symtab"] = index;
-    strcpy(str + index, ".symtab");
+    strlcpy(str + index, ".symtab", 8);
     index += 8;
     shstrIndex[".strtab"] = index;
-    strcpy(str + index, ".strtab");
+    strlcpy(str + index, ".strtab", 8);
     index += 8;
     shstrIndex[""] = index - 1;
     for (const auto &segName : segNames) {
         shstrIndex[segName] = index;
-        strcpy(str + index, segName.c_str());
-        index += segName.length() + 1;
+        int len = segName.length() + 1;
+        strlcpy(str + index, segName.c_str(), len);
+        index += len;
     }
 
     // 生成 .shstrtab
@@ -382,8 +385,9 @@ void Linker::assemExe() {
     strIndex[""] = strtabSize - 1;
     for (const auto sym : symDef) {
         strIndex[sym->name] = index;
-        strcpy(str + index, sym->name.c_str());
-        index += sym->name.length() + 1;
+        int len = sym->name.length() + 1;
+        strlcpy(str + index, sym->name.c_str(), len);
+        index += len;
     }
 
     // 更新符号表 name

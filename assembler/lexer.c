@@ -250,7 +250,7 @@ static std::unordered_map<std::string, Symbol> keywords = {
     {"sub", Symbol::I_SUB}, {"add", Symbol::I_ADD},
     {"and", Symbol::I_AND}, {"or", Symbol::I_OR},
     {"lea", Symbol::I_LEA},
-    
+
     {"call", Symbol::I_CALL}, {"int", Symbol::I_INT},
     {"imul", Symbol::I_IMUL}, {"idiv", Symbol::I_IDIV},
     {"neg", Symbol::I_NEG},

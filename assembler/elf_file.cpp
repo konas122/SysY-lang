@@ -144,26 +144,26 @@ void Elf_file::assmObj() {
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
     shstrIndex[".rel.text"] = idx;
-    strcpy(tmpStr + idx, ".rel.text");
+    strlcpy(tmpStr + idx, ".rel.text", 10);
     shstrIndex[".text"] = idx + 4;
     idx += 10;
     shstrIndex[""] = idx - 1;
     shstrIndex[".rel.data"] = idx;
-    strcpy(tmpStr + idx, ".rel.data");
+    strlcpy(tmpStr + idx, ".rel.data", 10);
     shstrIndex[".data"] = idx + 4;
     idx += 10;
     shstrIndex[".bss"] = idx;
-    strcpy(tmpStr + idx, ".bss");
+    strlcpy(tmpStr + idx, ".bss", 5);
     idx += 5;
     shstrIndex[".shstrtab"] = idx;
-    strcpy(tmpStr + idx, ".shstrtab");
+    strlcpy(tmpStr + idx, ".shstrtab", 8);
     idx += 10;
     shstrIndex[".symtab"] = idx;
-    strcpy(tmpStr + idx, ".symtab");
+    strlcpy(tmpStr + idx, ".symtab", 8);
     idx += 8;
     shstrIndex[".strtab"] = idx;
-    strcpy(tmpStr + idx, ".strtab");
-    idx += 8;
+    strlcpy(tmpStr + idx, ".strtab", 8);
+    // idx += 8;
 
     // 添加 .shstrtab
     addShdr(".shstrtab", SHT_STRTAB, 0, 0, curOff, shstrtabSize, SHN_UNDEF, 0, 1, 0);
@@ -193,18 +193,24 @@ void Elf_file::assmObj() {
     // 串表与符号表名字更新
     for (size_t i = 0, idx = 0; i < symNames.size(); ++i) {
         symTab[symNames[i]]->st_name = idx;
-        strcpy(tmpStr + idx, symNames[i].c_str());
-        idx += (symNames[i].length() + 1);
+        int len = symNames[i].length() + 1;
+        strlcpy(tmpStr + idx, symNames[i].c_str(), len);
+        idx += len;
     }
     // 处理重定位表
     for (size_t i = 0; i < relTab.size(); i++) {
         Elf32_Rel *rel = new Elf32_Rel();
         rel->r_offset = relTab[i]->offset;
         rel->r_info = ELF32_R_INFO((Elf32_Word)getSymIndex(relTab[i]->lbName), relTab[i]->type);
-        if (relTab[i]->tarSeg == ".text")
+        if (relTab[i]->tarSeg == ".text") {
             relTextTab.push_back(rel);
-        else if (relTab[i]->tarSeg == ".data")
+        }
+        else if (relTab[i]->tarSeg == ".data") {
             relDataTab.push_back(rel);
+        }
+        else {
+            delete rel;
+        }
     }
 
     // 添加 .rel.text

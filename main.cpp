@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <sys/stat.h>
+
 #include <vector>
 #include <cstring>
 #include <iostream>
@@ -62,6 +65,7 @@ int main(int argc, char *argv[]) {
                 "\t-or\t\t# 显示优化后的中间代码\n"
                 "\t-block\t\t# 显示基本块和流图关系\n"
                 "\t-h\t\t# 显示帮助信息\n";
+        return 0;
     }
 
     if (srcfiles.size() == 0 && !Args::showHelp) {
@@ -77,12 +81,11 @@ int main(int argc, char *argv[]) {
         cout << "Compile Done: Error=" << error << ", Warn=" << warn << "." << endl;
     }
 
-    transform(srcfiles.begin(), srcfiles.end(), srcfiles.begin(),
-              [](string &file)
+    transform(srcfiles.cbegin(), srcfiles.cend(), srcfiles.begin(),
+              [](const string &file)
               {
                   int pos = file.rfind(".c");
-                  file = file.substr(0, pos);
-                  return file;
+                  return file.substr(0, pos);
               });
 
     for (const auto &file : srcfiles) {
@@ -91,7 +94,7 @@ int main(int argc, char *argv[]) {
 
     // assemble("test/test1.c");
 
-    transform(srcfiles.begin(), srcfiles.end(), srcfiles.begin(),
+    transform(srcfiles.cbegin(), srcfiles.cend(), srcfiles.begin(),
               [](const string &file)
               {
                   return (file + ".o");
@@ -99,6 +102,19 @@ int main(int argc, char *argv[]) {
 
     string dest = "a.out";
     link(srcfiles, dest);
+
+    mode_t mode;
+    struct stat filestat;
+    if (stat(dest.c_str(), &filestat) == -1) {
+        perror("stat");
+        return 1;
+    }
+
+    mode = filestat.st_mode | S_IXUSR;
+    if (chmod(dest.c_str(), mode) == -1) {
+        perror("chmod");
+        return 1;
+    }
 
     return 0;
 }
