@@ -5,6 +5,7 @@
 #include "linker.h"
 
 using namespace std;
+using namespace LINK;
 
 extern bool showLink;
 

@@ -1,17 +1,18 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 
 #include "compiler/error.h"
 #include "compiler/compiler.h"
-
 #include "assembler/ass.h"
+#include "linker/link.h"
 
 using namespace std;
 
 
 int main(int argc, char *argv[]) {
-    vector<char *> srcfiles;
+    vector<string> srcfiles;
 
     if (argc > 1) {
         for (int i = 1; i < argc - 1; i++) {
@@ -69,19 +70,35 @@ int main(int argc, char *argv[]) {
     }
 
     Compiler compiler;
-    for (auto file : srcfiles) {
-        string filename(file);
-        compiler.compile(filename);
+    for (const auto &file : srcfiles) {
+        compiler.compile(file);
         int error = Error::getErrorNum();
         int warn = Error::getWarnNum();
         cout << "Compile Done: Error=" << error << ", Warn=" << warn << "." << endl;
     }
 
-    for (auto file : srcfiles) {
+    transform(srcfiles.begin(), srcfiles.end(), srcfiles.begin(),
+              [](string &file)
+              {
+                  int pos = file.rfind(".c");
+                  file = file.substr(0, pos);
+                  return file;
+              });
+
+    for (const auto &file : srcfiles) {
         assemble(file);
     }
 
     // assemble("test/test1.c");
+
+    transform(srcfiles.begin(), srcfiles.end(), srcfiles.begin(),
+              [](const string &file)
+              {
+                  return (file + ".o");
+              });
+
+    string dest = "a.out";
+    link(srcfiles, dest);
 
     return 0;
 }

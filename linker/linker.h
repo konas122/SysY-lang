@@ -6,6 +6,8 @@
 
 #include "elf_file.h"
 
+using Elf_file = LINK::Elf_file;
+
 
 // 一个数据块
 struct Block
@@ -69,6 +71,9 @@ public:
     std::vector<SymLink *> symDef;      // 所有符号定义信息 recv 字段 NULL 时标示该符号没有被任何文件引用, 否则指向本身 (同 prov)
 
 public:
+    Linker(const Linker &rhs) = delete;
+    Linker &operator=(const Linker &rhs) = delete;
+
     Linker();
     void addElf(const char *dir);   // 添加一个目标文件
     void collectInfo();             // 搜集段信息和符号关联信息

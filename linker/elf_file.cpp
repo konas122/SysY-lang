@@ -4,6 +4,7 @@
 #include "elf_file.h"
 
 using namespace std;
+using namespace LINK;
 
 extern bool showLink;
 

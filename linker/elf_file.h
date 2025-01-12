@@ -9,6 +9,10 @@
 
 #define cast_int(x) static_cast<int>(x)
 
+#define __link_namespace_start  namespace LINK {
+#define __link_namespace_end    }
+
+
 struct RelItem
 {
     std::string segName;
@@ -19,6 +23,8 @@ struct RelItem
     ~RelItem();
 };
 
+
+__link_namespace_start
 
 class Elf_file
 {
@@ -58,5 +64,7 @@ public:
     void writeElf(const char *dir, int flag);                   // 输出 Elf 文件
     ~Elf_file();
 };
+
+__link_namespace_end
 
 #endif
