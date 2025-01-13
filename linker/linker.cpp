@@ -334,19 +334,19 @@ void Linker::assemExe() {
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
     shstrIndex[".shstrtab"] = index;
-    strlcpy(str + index, ".shstrtab", 10);
+    strncpy(str + index, ".shstrtab", 10);
     index += 10;
     shstrIndex[".symtab"] = index;
-    strlcpy(str + index, ".symtab", 8);
+    strncpy(str + index, ".symtab", 8);
     index += 8;
     shstrIndex[".strtab"] = index;
-    strlcpy(str + index, ".strtab", 8);
+    strncpy(str + index, ".strtab", 8);
     index += 8;
     shstrIndex[""] = index - 1;
     for (const auto &segName : segNames) {
         shstrIndex[segName] = index;
         int len = segName.length() + 1;
-        strlcpy(str + index, segName.c_str(), len);
+        strncpy(str + index, segName.c_str(), len);
         index += len;
     }
 
@@ -386,7 +386,7 @@ void Linker::assemExe() {
     for (const auto sym : symDef) {
         strIndex[sym->name] = index;
         int len = sym->name.length() + 1;
-        strlcpy(str + index, sym->name.c_str(), len);
+        strncpy(str + index, sym->name.c_str(), len);
         index += len;
     }
 

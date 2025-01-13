@@ -144,25 +144,25 @@ void Elf_file::assmObj() {
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
     shstrIndex[".rel.text"] = idx;
-    strlcpy(tmpStr + idx, ".rel.text", 10);
+    strncpy(tmpStr + idx, ".rel.text", 10);
     shstrIndex[".text"] = idx + 4;
     idx += 10;
     shstrIndex[""] = idx - 1;
     shstrIndex[".rel.data"] = idx;
-    strlcpy(tmpStr + idx, ".rel.data", 10);
+    strncpy(tmpStr + idx, ".rel.data", 10);
     shstrIndex[".data"] = idx + 4;
     idx += 10;
     shstrIndex[".bss"] = idx;
-    strlcpy(tmpStr + idx, ".bss", 5);
+    strncpy(tmpStr + idx, ".bss", 5);
     idx += 5;
     shstrIndex[".shstrtab"] = idx;
-    strlcpy(tmpStr + idx, ".shstrtab", 8);
+    strncpy(tmpStr + idx, ".shstrtab", 10);
     idx += 10;
     shstrIndex[".symtab"] = idx;
-    strlcpy(tmpStr + idx, ".symtab", 8);
+    strncpy(tmpStr + idx, ".symtab", 8);
     idx += 8;
     shstrIndex[".strtab"] = idx;
-    strlcpy(tmpStr + idx, ".strtab", 8);
+    strncpy(tmpStr + idx, ".strtab", 8);
     // idx += 8;
 
     // 添加 .shstrtab
@@ -194,7 +194,7 @@ void Elf_file::assmObj() {
     for (size_t i = 0, idx = 0; i < symNames.size(); ++i) {
         symTab[symNames[i]]->st_name = idx;
         int len = symNames[i].length() + 1;
-        strlcpy(tmpStr + idx, symNames[i].c_str(), len);
+        strncpy(tmpStr + idx, symNames[i].c_str(), len);
         idx += len;
     }
     // 处理重定位表
