@@ -1,8 +1,6 @@
 #ifndef __ASSEMBLER_ASS_H__
 #define __ASSEMBLER_ASS_H__
 
-#include "elf_file.h"
-
 #include <cstdio>
 #include <iostream>
 
@@ -60,14 +58,13 @@ extern char id[];       // 记录当前 ident
 extern int num;         // 记录当前 num
 extern bool showAss;    // 显示汇编信息
 
-class Elf_file;         // elf 文件类
 class Table;
-
 struct lb_record;
+
 extern Table table;
 extern string curSeg;       // 当前段名称
 extern int dataLen;         // 有效数据长度
-extern Elf_file obj;        // 输出文件
+
 extern int inLen;           // 已经输出的指令长度, 调试用
 extern lb_record *relLb;    // 记录指令中可能需要重定位的标签
 struct ModRM;

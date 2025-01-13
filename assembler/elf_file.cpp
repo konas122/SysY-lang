@@ -3,6 +3,7 @@
 #include "semantic.h"
 #include "elf_file.h"
 
+using namespace ASS;
 
 Elf_file obj;
 

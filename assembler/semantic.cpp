@@ -5,6 +5,7 @@
 Table table;    // 符号表全局对象
 int lb_record::curAddr = 0x00000000;
 
+
 lb_record::lb_record(const string &n, bool ex)
     : segName(curSeg), lbName(n)
 {
@@ -51,6 +52,8 @@ void lb_record::write() {
     }
 }
 
+
+// =============================================================================
 
 int Table::hasName(string name) {
     return (lb_map.find(name) != lb_map.end());
@@ -136,6 +139,8 @@ lb_record *Table::getlb(string name) {
 }
 
 
+// =============================================================================
+
 ModRM::ModRM() {
     init();
 }
@@ -146,6 +151,9 @@ void ModRM::init() {
     rm = 0;
 }
 
+
+// =============================================================================
+
 SIB::SIB() {
     init();
 }
@@ -155,6 +163,9 @@ void SIB::init() {
     index = 0;
     base = 0;
 }
+
+
+// =============================================================================
 
 Inst::Inst() {
     init();

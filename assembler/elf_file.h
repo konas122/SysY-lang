@@ -8,6 +8,9 @@
 #include <string>
 #include <unordered_map>
 
+#define __ass_namespace_start   namespace ASS {
+#define __ass_namespace_end     }
+
 using namespace std;
 
 struct lb_record;
@@ -23,6 +26,8 @@ struct RelInfo
     RelInfo(const string &seg, int addr, const string &lb, int t);
 };
 
+
+__ass_namespace_start
 
 // elf 文件类, 包含 elf 文件的重要内容, 处理 elf 文件
 class Elf_file
@@ -64,5 +69,9 @@ public:
     void printAll();
     ~Elf_file();
 };
+
+__ass_namespace_end
+
+extern ASS::Elf_file obj; // 输出文件
 
 #endif

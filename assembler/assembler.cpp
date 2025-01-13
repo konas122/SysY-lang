@@ -1,4 +1,5 @@
 #include "ass.h"
+#include "elf_file.h"
 #include "semantic.h"
 
 

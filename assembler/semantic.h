@@ -4,6 +4,7 @@
 #include "ass.h"
 #include <list>
 #include <vector>
+#include <cstdint>
 #include <iostream>
 #include <unordered_map>
 
@@ -32,6 +33,8 @@ struct lb_record
 };
 
 
+// =============================================================================
+
 class Table
 {
 public:
@@ -51,6 +54,8 @@ public:
 };
 
 
+// =============================================================================
+
 struct ModRM
 {
     int mod;    // 0-1
@@ -64,6 +69,8 @@ struct ModRM
 };
 
 
+// =============================================================================
+
 struct SIB
 {
     int scale;  // 0-1
@@ -76,6 +83,8 @@ struct SIB
     SIB &operator=(const SIB &rhs) = delete;
 };
 
+
+// =============================================================================
 
 struct Inst
 {
