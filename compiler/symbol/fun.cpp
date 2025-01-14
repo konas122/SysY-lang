@@ -27,9 +27,8 @@ using namespace std;
 
 
 Fun::Fun(bool ext, Tag t, const string &n, const vector<Var *> &paraList)
-    : externed(ext), type(t), name(n)
+    : externed(ext), type(t), name(n), paraVar(paraList)
 {
-    paraVar = paraList;
     curEsp = Plat::stackBase;
     maxDepth = Plat::stackBase;
 

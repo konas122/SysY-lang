@@ -1,8 +1,9 @@
+#include <numeric>
+
 #include "symbol/var.h"
 #include "symbol/symtab.h"
 
 #include "ir/interInst.h"
-
 #include "optimize/dfg.h"
 
 #include "constprop.h"
@@ -95,10 +96,13 @@ void ConstPropagation::join(Block *block) {
     }
     // 多个前驱, 处理 in 集合每个元素
     for (size_t i = 0; i < in.size(); ++i) {
-        double val = UNDEF;
-        for (const auto bl : prevs) {
-            val = join(val, bl->outVals[i]);
-        }
+        double val = std::accumulate(
+            prevs.cbegin(), prevs.cend(), UNDEF,
+            [i](const double val, const Block *block)
+            {
+                return join(val, block->outVals[i]);
+            });
+
         in[i] = val;
     }
 }

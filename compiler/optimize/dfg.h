@@ -28,7 +28,7 @@ public:
     CopyInfo copyInfo;  // 复写传播数据流信息
     LiveInfo liveInfo;  // 活跃变量数据流信息
 
-    Block(const std::vector<InterInst *> &codes);
+    explicit Block(const std::vector<InterInst *> &codes);
 
     void toString() const;
 };

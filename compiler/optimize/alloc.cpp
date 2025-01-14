@@ -12,10 +12,8 @@
 using namespace std;
 
 
-Node::Node(Var *v, const Set &E) : var(v)
-{
-    exColors = E;
-}
+Node::Node(Var *v, const Set &E) : var(v), exColors(E)
+{}
 
 void Node::addLink(Node *node) {
     auto pos = lower_bound(links.begin(), links.end(), node);
