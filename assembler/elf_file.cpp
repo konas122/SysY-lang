@@ -139,7 +139,6 @@ void Elf_file::assmObj() {
     // 填充 .shstrtab 数据
     int curOff = 52 + dataLen;  // header + (.text+pad+.data+pad) 数据偏移, .shstrtab 偏移
     shstrtabSize = 51;
-
     char *tmpStr = shstrtab = new char[shstrtabSize];
     int idx = 0;
     // 段表串名与索引映射
@@ -164,7 +163,6 @@ void Elf_file::assmObj() {
     idx += 8;
     shstrIndex[".strtab"] = idx;
     strncpy(tmpStr + idx, ".strtab", 8);
-    // idx += 8;
 
     // 添加 .shstrtab
     addShdr(".shstrtab", SHT_STRTAB, 0, 0, curOff, shstrtabSize, SHN_UNDEF, 0, 1, 0);
@@ -182,8 +180,8 @@ void Elf_file::assmObj() {
 
     // 添加 .strtab
     strtabSize = 0;
-    for (size_t i = 0; i < symNames.size(); ++i) { // 遍历所有符号
-        strtabSize += symNames[i].length() + 1;
+    for (const auto &symName : symNames) { // 遍历所有符号
+        strtabSize += symName.length() + 1;
     }
     curOff += symNames.size() * 16;                                                 // .strtab 偏移
     addShdr(".strtab", SHT_STRTAB, 0, 0, curOff, strtabSize, SHN_UNDEF, 0, 1, 0);   // .strtab
@@ -223,8 +221,7 @@ void Elf_file::assmObj() {
     addShdr(".rel.data", SHT_REL, 0, 0, curOff, relDataTab.size() * 8, getSegIndex(".symtab"), getSegIndex(".data"), 1, 8); // .rel.data
 
     // 更新段表 name
-    for (size_t i = 0; i < AllSegNames.size(); ++i) {
-        string name = AllSegNames[i];
+    for (const auto &name : AllSegNames) {
         shdrTab[name]->sh_name = shstrIndex[name];
     }
 }
@@ -269,26 +266,24 @@ void Elf_file::padSeg(const string &first, const string &second) {
 void Elf_file::writeElfTail() {
     fwrite(shstrtab, shstrtabSize, 1, fout);    // .shstrtab
 
-    for (size_t i = 0; i < shdrNames.size(); ++i) {     // 段表
-        const Elf32_Shdr *sh = shdrTab[shdrNames[i]];
+    for (const auto &shdrName : shdrNames) {    // 段表
+        const Elf32_Shdr *sh = shdrTab[shdrName];
         fwrite(sh, ehdr.e_shentsize, 1, fout);
     }
 
-    for (size_t i = 0; i < symNames.size(); ++i) {      // 符号表
-        const Elf32_Sym *tmpSym = symTab[symNames[i]];
+    for (const auto &symName : symNames) {      // 符号表
+        const Elf32_Sym *tmpSym = symTab[symName];
         fwrite(tmpSym, sizeof(Elf32_Sym), 1, fout);
     }
 
     fwrite(strtab, strtabSize, 1, fout);        // .strtab
 
-    for (size_t i = 0; i < relTextTab.size(); ++i) {    // .rel.text
-        Elf32_Rel *rel = relTextTab[i];
+    for (const auto rel : relTextTab) {         // .rel.text
         fwrite(rel, sizeof(Elf32_Rel), 1, fout);
         delete rel;
     }
 
-    for (size_t i = 0; i < relDataTab.size(); ++i) {    // .rel.data
-        Elf32_Rel *rel = relDataTab[i];
+    for (const auto rel : relDataTab) {         // .rel.data
         fwrite(rel, sizeof(Elf32_Rel), 1, fout);
         delete rel;
     }
@@ -296,20 +291,20 @@ void Elf_file::writeElfTail() {
 
 Elf_file::~Elf_file() {
     // 清空段表
-    for (auto i = shdrTab.begin(); i != shdrTab.end(); ++i) {
+    for (auto i = shdrTab.cbegin(); i != shdrTab.cend(); ++i) {
         delete i->second;
     }
     shdrTab.clear();
     shdrNames.clear();
 
     // 清空符号表
-    for (auto i = symTab.begin(); i != symTab.end(); ++i) {
+    for (auto i = symTab.cbegin(); i != symTab.cend(); ++i) {
         delete i->second;
     }
     symTab.clear();
 
     // 清空重定位表
-    for (auto i = relTab.begin(); i != relTab.end(); ++i) {
+    for (auto i = relTab.cbegin(); i != relTab.cend(); ++i) {
         delete *i;
     }
     relTab.clear();
@@ -319,28 +314,31 @@ void Elf_file::printAll() {
     if (!showAss)
         return;
     cout << "------------段信息------------\n";
-    for (auto i = shdrTab.begin(); i != shdrTab.end(); ++i) {
+    for (auto i = shdrTab.cbegin(); i != shdrTab.cend(); ++i) {
         if (i->first == "") {
             continue;
         }
         cout << i->first << ":" << i->second->sh_size << endl;
     }
     cout << "------------符号信息------------\n";
-    for (auto i = symTab.begin(); i != symTab.end(); ++i) {
+    for (auto i = symTab.cbegin(); i != symTab.cend(); ++i) {
         if (i->first == "") {
             continue;
         }
-        cout << i->first << ":";
-        if (i->second->st_shndx == 0)
+        cout << i->first << ": ";
+        if (i->second->st_shndx == 0) {
             cout << "外部";
-        if (ELF32_ST_BIND(i->second->st_info) == STB_GLOBAL)
+        }
+        if (ELF32_ST_BIND(i->second->st_info) == STB_GLOBAL) {
             cout << "全局";
-        else if (ELF32_ST_BIND(i->second->st_info) == STB_LOCAL)
+        }
+        else if (ELF32_ST_BIND(i->second->st_info) == STB_LOCAL) {
             cout << "局部";
+        }
         cout << endl;
     }
     cout << "------------重定位信息------------\n";
-    for (auto i = relTab.begin(); i != relTab.end(); ++i) {
+    for (auto i = relTab.cbegin(); i != relTab.cend(); ++i) {
         cout << (*i)->tarSeg << ":" << (*i)->offset << "<-" << (*i)->lbName << endl;
     }
 }
