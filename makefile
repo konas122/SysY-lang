@@ -2,7 +2,7 @@ AR = ar
 ARFLAGS = rcs
 
 CXX = g++
-CXXFLAGS = -g -Wno-deprecated -DDEBUG -I compiler -Wall
+CXXFLAGS = -g -std=c++17 -Wno-deprecated -DDEBUG -I compiler -Wall
 
 NPROC = $(shell nproc)
 

@@ -229,7 +229,7 @@ void Fun::optimize(SymTab *tab) {
     LiveVar lv(dfg, tab, paraVar);
     lv.elimateDeadCode();
 
-    // 优化结果存储在optCode
+    // 优化结果存储在 optCode
     dfg->toCode(optCode);   // 导出数据流图为中间代码
 
 #ifdef REG_OPT

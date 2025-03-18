@@ -33,7 +33,7 @@ public:
     static int getWarnNum();
 
     static void lexError(int code);
-    static void synError(int code, Token *t);
+    static void synError(int code, const Token *t);
     static void semError(int code, const std::string &name = "");
     static void semWarn(int code, const std::string &name = "");
 };

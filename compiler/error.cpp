@@ -28,7 +28,7 @@ void Error::lexError(int code) {
            scanner->getLine(), scanner->getCol(), lexErrorTable[code]);
 }
 
-void Error::synError(int code, Token *t) {
+void Error::synError(int code, const Token *t) {
     static const char *synErrorTable[] = {
         "类型",
         "标识符",
