@@ -24,9 +24,9 @@ class Parser
     void def(bool ext, Tag t);
     Var *defdata(bool ext, Tag t);
     void deflist(bool ext, Tag t);
-    Var *varrdef(bool ext, Tag t, bool ptr, const std::string &name);
-    Var *init(bool ext, Tag t, bool ptr, const std::string &name);
-    void idtail(bool ext, Tag t, bool ptr, const std::string &name);
+    Var *varrdef(bool ext, Tag t, bool ptr, std::string_view name);
+    Var *init(bool ext, Tag t, bool ptr, std::string_view name);
+    void idtail(bool ext, Tag t, bool ptr, std::string_view name);
 
     // 函数
     Var *paradatatail(Tag t, std::string &name);

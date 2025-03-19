@@ -9,7 +9,7 @@ using namespace LINK;
 extern bool showLink;
 
 
-RelItem::RelItem(const string &sname, Elf32_Rel *r, const string &rname)
+RelItem::RelItem(std::string_view sname, Elf32_Rel *r, std::string_view rname)
     : segName(sname), relName(rname), rel(r)
 {}
 
@@ -114,7 +114,7 @@ void Elf_file::readElf(const char *dir) {
     fclose(fp);
 }
 
-int Elf_file::getSegIndex(const string &segName) {
+int Elf_file::getSegIndex(std::string_view segName) {
     int index = 0;
     for (const auto &shdrName : shdrNames) {
         if (shdrName == segName) {
@@ -125,7 +125,7 @@ int Elf_file::getSegIndex(const string &segName) {
     return index;
 }
 
-int Elf_file::getSymIndex(const string &name) {
+int Elf_file::getSymIndex(std::string_view name) {
     int index = 0;
     for (const auto &symName : symNames) {
         if (symName == name) {

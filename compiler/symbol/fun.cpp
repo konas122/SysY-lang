@@ -26,7 +26,7 @@ using namespace std;
 #define SEMWARN(code, name) Error::semWarn(code, name)
 
 
-Fun::Fun(bool ext, Tag t, const string &n, const vector<Var *> &paraList)
+Fun::Fun(bool ext, Tag t, std::string_view n, const vector<Var *> &paraList)
     : externed(ext), type(t), name(n), paraVar(paraList)
 {
     curEsp = Plat::stackBase;

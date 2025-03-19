@@ -11,7 +11,7 @@ bool showAss = false;
 string finName;
 
 
-void assemble(const string &filename) {
+void assemble(std::string_view filename) {
     int pos = filename.rfind(".c");
     finName = filename.substr(0, pos);
 

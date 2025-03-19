@@ -88,7 +88,7 @@ extern int scanLop;
 
 int getSym();
 void program();
-void assemble(const string &filename);
+void assemble(std::string_view filename);
 void writeBytes(int value, int len);    // 按照小端顺序输出任意不大于 4 字节长度数据
 void gen2op(Symbol opt, int des_t, int src_t, int len);
 void gen1op(Symbol opt, int opr_t, int len);

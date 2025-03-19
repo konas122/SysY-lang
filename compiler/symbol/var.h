@@ -39,7 +39,7 @@ class Var
     void setExtern(bool ext);           // 设置 extern
     void setType(Tag t);                // 设置类型
     void setPtr(bool ptr);              // 设置指针
-    void setName(const std::string& n); // 设置名字
+    void setName(std::string_view n);   // 设置名字
     void setArray(int len);             // 设定数组
     void clear();                       // 清除关键字段信息
 
@@ -48,8 +48,8 @@ public:
     static Var *getVoid();
     static Var *getTrue();
 
-    Var(const std::vector<int> &sp, bool ext, Tag t, bool ptr, const std::string &name, Var *init = nullptr);   // 变量
-    Var(const std::vector<int> &sp, bool ext, Tag t, const std::string &name, int len);                         // 数组
+    Var(const std::vector<int> &sp, bool ext, Tag t, bool ptr, std::string_view name, Var *init = nullptr);   // 变量
+    Var(const std::vector<int> &sp, bool ext, Tag t, std::string_view name, int len);                         // 数组
     explicit Var(Token *lt);                            // 设定字面量
     explicit Var(int val);                              // 整数变量
     Var(const std::vector<int> &sp, Tag t, bool ptr);   // 临时变量

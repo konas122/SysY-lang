@@ -19,7 +19,7 @@ struct RelItem
     std::string relName;
     Elf32_Rel *rel;
 
-    RelItem(const std::string &sname, Elf32_Rel *r, const std::string &rname);
+    RelItem(std::string_view sname, Elf32_Rel *r, std::string_view rname);
     ~RelItem();
 };
 
@@ -50,8 +50,8 @@ public:
     Elf_file() = default;
     void readElf(const char *dir);                              // 读入 elf
     void getData(char *buf, Elf32_Off offset, Elf32_Word size); // 读取数据
-    int getSegIndex(const std::string &segName);                // 获取指定段名在段表下标
-    int getSymIndex(const std::string &symName);                // 获取指定符号名在符号表下标
+    int getSegIndex(std::string_view segName);                  // 获取指定段名在段表下标
+    int getSymIndex(std::string_view symName);                  // 获取指定符号名在符号表下标
     void addPhdr(Elf32_Word type, Elf32_Off off,                // 添加程序头表项
                  Elf32_Addr vaddr, Elf32_Word filesz,
                  Elf32_Word memsz, Elf32_Word flags, Elf32_Word align);

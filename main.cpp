@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     }
 
     transform(srcfiles.cbegin(), srcfiles.cend(), srcfiles.begin(),
-              [](const string &file)
+              [](std::string_view file)
               {
                   int pos = file.rfind(".c");
                   return file.substr(0, pos);

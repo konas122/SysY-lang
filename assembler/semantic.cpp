@@ -6,7 +6,7 @@ Table table;    // 符号表全局对象
 int lb_record::curAddr = 0x00000000;
 
 
-lb_record::lb_record(const string &n, bool ex)
+lb_record::lb_record(string_view n, bool ex)
     : segName(curSeg), lbName(n)
 {
     addr = lb_record::curAddr;
@@ -21,7 +21,7 @@ lb_record::lb_record(const string &n, bool ex)
 }
 
 // L equ 1
-lb_record::lb_record(const string &n, int a)
+lb_record::lb_record(string_view n, int a)
     : segName(curSeg), lbName(n)
 {
     addr = a;
@@ -32,7 +32,7 @@ lb_record::lb_record(const string &n, int a)
 }
 
 // L times 10 dw 10,"1234"
-lb_record::lb_record(const string &n, int t, int l, const list<int> &c)
+lb_record::lb_record(string_view n, int t, int l, const list<int> &c)
     : segName(curSeg), lbName(n), cont(c)
 {
     addr = lb_record::curAddr;

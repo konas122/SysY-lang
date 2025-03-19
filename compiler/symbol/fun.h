@@ -34,7 +34,7 @@ class Fun
     std::list<InterInst *> optCode; // 优化后的中间代码
 
 public:
-    Fun(bool ext, Tag t, const std::string &n, const std::vector<Var *> &paraList);
+    Fun(bool ext, Tag t, std::string_view n, const std::vector<Var *> &paraList);
     ~Fun();
 
     // 声明定义与使用

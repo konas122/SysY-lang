@@ -9,7 +9,7 @@ using namespace ASS;
 Elf_file obj;
 
 
-RelInfo::RelInfo(const string &seg, int addr, const string &lb, int t)
+RelInfo::RelInfo(std::string_view seg, int addr, std::string_view lb, int t)
     : tarSeg(seg), offset(addr), lbName(lb), type(t)
 { }
 
@@ -18,7 +18,7 @@ Elf_file::Elf_file() {
     addShdr("", 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-int Elf_file::getSegIndex(const string &segName) {
+int Elf_file::getSegIndex(std::string_view segName) {
     int index = 0;
     for (size_t i = 0; i < shdrNames.size(); ++i) {
         if (shdrNames[i] == segName) {
@@ -29,7 +29,7 @@ int Elf_file::getSegIndex(const string &segName) {
     return index;
 }
 
-int Elf_file::getSymIndex(const string &symName) {
+int Elf_file::getSymIndex(std::string_view symName) {
     int index = 0;
     for (size_t i = 0; i < symNames.size(); ++i) {
         if (symNames[i] == symName) {
@@ -102,7 +102,7 @@ void Elf_file::addSym(std::shared_ptr<lb_record> lb) {
 }
 
 
-void Elf_file::addRel(const string &seg, int addr, const string &lb, int type) {
+void Elf_file::addRel(std::string_view seg, int addr, std::string_view lb, int type) {
     auto rel = make_unique<RelInfo>(seg, addr, lb, type);
     relTab.emplace_back(std::move(rel));
 }

@@ -40,7 +40,7 @@ Token::~Token() {}
 
 // =============================================================================
 
-Id::Id(const string& n) : Token(Tag::ID), name(n) {}
+Id::Id(string_view n) : Token(Tag::ID), name(n) {}
 
 string Id::toString() const {
     return Token::toString() + " " + name;
@@ -49,7 +49,7 @@ string Id::toString() const {
 
 // =============================================================================
 
-Str::Str(const std::string & s) : Token(Tag::STR), str(s) {}
+Str::Str(std::string_view  s) : Token(Tag::STR), str(s) {}
 
 string Str::toString() const {
     return string("[") + Token::toString() + "]: " + str;

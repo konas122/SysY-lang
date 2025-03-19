@@ -155,7 +155,7 @@ void Parser::deflist(bool ext, Tag t) {
 /**
  * <varrdef> -> lbrack num rbrack | <init>
  */
-Var *Parser::varrdef(bool ext, Tag t, bool ptr, const string &name) {
+Var *Parser::varrdef(bool ext, Tag t, bool ptr, std::string_view name) {
     if (match(Tag::LBRACK)) {
         int len = 0;
         if (F(Tag::NUM)) {
@@ -178,7 +178,7 @@ Var *Parser::varrdef(bool ext, Tag t, bool ptr, const string &name) {
 /**
  * <init> -> assign <expr> | ^
  */
-Var *Parser::init(bool ext, Tag t, bool ptr, const string &name) {
+Var *Parser::init(bool ext, Tag t, bool ptr, std::string_view name) {
     Var *initVal = nullptr;
     if (match(Tag::ASSIGN)) {
         initVal = expr();
@@ -217,7 +217,7 @@ void Parser::def(bool ext, Tag t) {
 /**
  * <idtail> -> <varrdef> <deflist> | lparen <para> rparen <funtail>
  */
-void Parser::idtail(bool ext, Tag t, [[maybe_unused]] bool ptr, const string &name) {
+void Parser::idtail(bool ext, Tag t, [[maybe_unused]] bool ptr, std::string_view name) {
     if (match(Tag::LPAREN)) {   // 函数
         symtab.enter();
         vector<Var *> paraList;

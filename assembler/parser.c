@@ -4,11 +4,11 @@
 #include "elf_file.h"
 
 
-void lbtail(const string &lbName);
+void lbtail(std::string_view lbName);
 void inst();
-void basetail(const string &lbName, int times);
+void basetail(std::string_view lbName, int times);
 int len();
-void values(const string &lbName, int times, int len);
+void values(std::string_view lbName, int times, int len);
 void type(list<int> &cont, int len);
 void valtail(list<int> &cont, int len);
 void opr(int &regNum, int &type, int &len);
@@ -119,7 +119,7 @@ void program() {
  *          |  COLON
  *          |  <basetail>
  */
-void lbtail(const string &lbName) {
+void lbtail(std::string_view lbName) {
     nextToken();
     switch(token) {
     case Symbol::A_TIMES:
@@ -149,7 +149,7 @@ void lbtail(const string &lbName) {
 /**
  * <basetail> -> <len> <values>
  */
-void basetail(const string &lbName, int times) {
+void basetail(std::string_view lbName, int times) {
     int l = len();
     values(lbName, times, l);
 }
@@ -180,7 +180,7 @@ int len() {
 /**
  * <values> -> <type> <valtail>
  */
-void values(const string &lbName, int times, int len) {
+void values(std::string_view lbName, int times, int len) {
     list<int> cont;
     type(cont, len);
     valtail(cont, len);

@@ -27,7 +27,7 @@ class Id: public Token
 {
 public:
     std::string name;
-    explicit Id(const std::string &n);
+    explicit Id(std::string_view n);
     virtual std::string toString() const override;
 };
 
@@ -40,7 +40,7 @@ class Str: public Token
 {
 public:
     std::string str;
-    explicit Str(const std::string &s);
+    explicit Str(std::string_view s);
     virtual std::string toString() const override;
 };
 

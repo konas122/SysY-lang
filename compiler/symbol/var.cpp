@@ -82,7 +82,7 @@ Var::Var(const vector<int> &sp, const Var *v) {
 }
 
 // 变量, 指针
-Var::Var(const vector<int>& sp, bool ext, Tag t, bool ptr, const string &name, Var *init) {
+Var::Var(const vector<int>& sp, bool ext, Tag t, bool ptr, std::string_view name, Var *init) {
     clear();
     scopePath = sp;
     setExtern(ext);
@@ -93,7 +93,7 @@ Var::Var(const vector<int>& sp, bool ext, Tag t, bool ptr, const string &name, V
 }
 
 // 数组
-Var::Var(const vector<int> &sp, bool ext, Tag t, const string &name, int len) {
+Var::Var(const vector<int> &sp, bool ext, Tag t, std::string_view name, int len) {
     clear();
     scopePath = sp;
     setExtern(ext);
@@ -170,7 +170,7 @@ void Var::setPtr(bool ptr) {
     }
 }
 
-void Var::setName(const string &n) {
+void Var::setName(std::string_view n) {
     if (n == "") {
         name = GenIR::genLb();
         return;
