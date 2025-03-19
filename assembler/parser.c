@@ -29,7 +29,7 @@ string curSeg;      // 当前段名称
 int dataLen = 0;    // 有效数据长度
 
 int scanLop = 1;    // 记录扫描的次数, 第一遍扫描计算所有符号的地址或者值, 第二编扫描, 生成指令的二进制内容
-lb_record *relLb = nullptr; // 记录指令中可能需要重定位的标签 (使用了符号)
+shared_ptr<lb_record> relLb = nullptr;  // 记录指令中可能需要重定位的标签 (使用了符号)
 
 
 int nextToken() {
@@ -101,7 +101,7 @@ void program() {
 
         if (scanLop == 2) {
             string name = id;
-            lb_record *lr = table.getlb(name);
+            auto lr = table.getlb(name);
             lr->global = true;
         }
         break;
@@ -129,13 +129,13 @@ void lbtail(const string &lbName) {
     case Symbol::A_EQU:
         match(Symbol::NUMBER);
         {
-            lb_record *lr = new lb_record(lbName, num);
+            auto lr = make_shared<lb_record>(lbName, num);
             table.addlb(lr);
         }
         break;
     case Symbol::COLON:
         {
-            lb_record *lr = new lb_record(lbName, false);
+            auto lr = make_shared<lb_record>(lbName, false);
             table.addlb(lr);
         }
         break;
@@ -184,7 +184,7 @@ void values(const string &lbName, int times, int len) {
     list<int> cont;
     type(cont, len);
     valtail(cont, len);
-    lb_record *lb = new lb_record(lbName, times, len, cont);
+    auto lb = make_shared<lb_record>(lbName, times, len, cont);
     table.addlb(lb);
 }
 
@@ -212,7 +212,7 @@ void type(list<int> &cont, int len) {
         {
             int cont_len = cont.size();
             string name = id;
-            lb_record *lr = table.getlb(name);
+            auto lr = table.getlb(name);
             // 把地址作为占位, 第二次扫描还会刷新, 为该位置生成重定位项 (equ除外)
             cont.emplace_back(lr->addr);
             // 第二次扫描记录重定位项, 处理数据段重定位项
@@ -286,7 +286,7 @@ void inst() {
  */
 void opr(int &regNum, int &type, int &len) {
     string name;
-    lb_record *lr;
+    shared_ptr<lb_record> lr;
     nextToken();
 
     switch(token) {
@@ -363,7 +363,7 @@ void mem() {
  */
 void addr() {
     string name;
-    lb_record *lr;
+    shared_ptr<lb_record> lr;
     nextToken();
     switch (token) {
     case Symbol::NUMBER:    // 直接寻址 00 xxx 101 disp32

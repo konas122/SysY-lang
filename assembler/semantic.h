@@ -2,7 +2,9 @@
 #define __ASSEMBLER_SEMANTIC_H__
 
 #include "ass.h"
+
 #include <list>
+#include <memory>
 #include <vector>
 #include <cstdint>
 #include <iostream>
@@ -38,11 +40,11 @@ struct lb_record
 class Table
 {
 public:
-    unordered_map<string, lb_record *> lb_map;  // 符号声明列表
-    vector<lb_record *> defLbs;                 // 记录数据定义符号顺序
-    int hasName(string name);
-    void addlb(lb_record *p_lb);    // 添加符号
-    lb_record *getlb(string name);  // 获取已经定义的符号
+    unordered_map<string, std::shared_ptr<lb_record>> lb_map;   // 符号声明列表
+    vector<std::shared_ptr<lb_record>> defLbs;                  // 记录数据定义符号顺序
+    int hasName(const string& name);
+    void addlb(std::shared_ptr<lb_record> p_lb);    // 添加符号
+    std::shared_ptr<lb_record> getlb(const string& name);           // 获取已经定义的符号
     void switchSeg();               // 切换下一个段, 由于一般只有 .text 和 .data, 因此可以此时创建段表项目
     void exportSyms();              // 导出所有的符号到 elf
     void write();

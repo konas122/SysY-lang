@@ -1,5 +1,4 @@
 #include "error.h"
-
 #include "lexer.h"
 
 using namespace std;
@@ -14,11 +13,8 @@ Lexer::Lexer(Scanner &sc) : scanner(sc) {
     ch = ' ';
 }
 
-Lexer::~Lexer() {
-    if (!token) {
-        delete token;
-    }
-}
+Lexer::~Lexer()
+{}
 
 bool Lexer::scan(char need) {
     ch = scanner.scan();
@@ -32,9 +28,9 @@ bool Lexer::scan(char need) {
     return true;
 }
 
-Token *Lexer::tokenize() {
+unique_ptr<Token> Lexer::tokenize() {
     while (ch != -1) {
-        Token *t = nullptr;
+        unique_ptr<Token> t;
 
         while (ch == ' ' || ch == '\n' || ch == '\t') {
             scan();
@@ -50,10 +46,10 @@ Token *Lexer::tokenize() {
 
             Tag tag = keywords.getTag(name);
             if (tag == Tag::ID) {
-                t = new Id(name);
+                t = make_unique<Id>(name);
             }
             else {
-                t = new Token(tag);
+                t = make_unique<Token>(tag);
             }
         }
         // STR
@@ -80,7 +76,7 @@ Token *Lexer::tokenize() {
                     else if (ch == '\n');  // do nothing
                     else if (ch == -1){
                         LEXERROR(cast_int(LexError::STR_NO_R_QUTION));
-                        t = new Token(Tag::ERR);
+                        t = make_unique<Token>(Tag::ERR);
                         break;
                     }
                     else {
@@ -89,7 +85,7 @@ Token *Lexer::tokenize() {
                 }
                 else if (ch == '\n' || ch == -1) {
                     LEXERROR(cast_int(LexError::STR_NO_R_QUTION));
-                    t = new Token(Tag::ERR);
+                    t = make_unique<Token>(Tag::ERR);
                     break;
                 }
                 else {
@@ -97,7 +93,7 @@ Token *Lexer::tokenize() {
                 }
             }
             if (!t) {
-                t = new Str(str);
+                t = make_unique<Str>(str);
             }
         }
         // NUM
@@ -130,7 +126,7 @@ Token *Lexer::tokenize() {
                     }
                     else {
                         LEXERROR(cast_int(LexError::NUM_HEX_TYPE)); // 0x 后无数据
-                        t = new Token(Tag::ERR);
+                        t = make_unique<Token>(Tag::ERR);
                     }
                 }
                 else if (ch == 'b' || ch == 'B') {   // BIN
@@ -143,7 +139,7 @@ Token *Lexer::tokenize() {
                     }
                     else {
                         LEXERROR(cast_int(LexError::NUM_BIN_TYPE));
-                        t = new Token(Tag::ERR);
+                        t = make_unique<Token>(Tag::ERR);
                     }
                 }
                 else if (ch >= '0' && ch <= '7') {  // OCT
@@ -154,7 +150,7 @@ Token *Lexer::tokenize() {
                 }
             }
             if (!t) {
-                t = new Num(val);
+                t = make_unique<Num>(val);
             }
         }
         // CHAR
@@ -180,7 +176,7 @@ Token *Lexer::tokenize() {
                 }
                 else if (ch == -1 || ch == '\n') {  // 文件结束 换行
                     LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
-                    t=new Token(Tag::ERR);
+                    t = make_unique<Token>(Tag::ERR);
                 }
                 else {
                     c = ch; // 没有转义
@@ -188,11 +184,11 @@ Token *Lexer::tokenize() {
             }
             else if (ch == '\n' || ch == -1) {
                 LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
-                t = new Token(Tag::ERR);
+                t = make_unique<Token>(Tag::ERR);
             }
             else if (ch == '\'') {
                 LEXERROR(cast_int(LexError::CHAR_NO_DATA));
-                t = new Token(Tag::ERR);
+                t = make_unique<Token>(Tag::ERR);
                 scan(); // 读掉引号
             }
             else {
@@ -200,11 +196,11 @@ Token *Lexer::tokenize() {
             }
             if (!t) {
                 if (scan('\'')) {   // 匹配右侧引号, 读掉引号
-                    t=new Char(c);
+                    t = make_unique<Char>(c);
                 }
                 else {
                     LEXERROR(cast_int(LexError::CHAR_NO_R_QUTION));
-                    t = new Token(Tag::ERR);
+                    t = make_unique<Token>(Tag::ERR);
                 }
             }
         }
@@ -214,16 +210,16 @@ Token *Lexer::tokenize() {
                 while (ch != '\n' && ch != -1) {
                     scan();
                 }
-                t = new Token(Tag::ERR);
+                t = make_unique<Token>(Tag::ERR);
                 break;
             case '+':
-                t = new Token(scan('+') ? Tag::INC : Tag::ADD);
+                t = make_unique<Token>(scan('+') ? Tag::INC : Tag::ADD);
                 break;
             case '-':
-                t = new Token(scan('-') ? Tag::DEC : Tag::SUB);
+                t = make_unique<Token>(scan('-') ? Tag::DEC : Tag::SUB);
                 break;
             case '*':
-                t = new Token(Tag::MUL);
+                t = make_unique<Token>(Tag::MUL);
                 scan();
                 break;
             case '/':
@@ -232,7 +228,7 @@ Token *Lexer::tokenize() {
                     while (ch != '\n' && ch != -1) {
                         scan();
                     }
-                    t = new Token(Tag::ERR);
+                    t = make_unique<Token>(Tag::ERR);
                 }
                 else if (ch == '*') {   // 多行注释
                     while (!scan(-1)) {
@@ -245,89 +241,86 @@ Token *Lexer::tokenize() {
                     if (ch == -1) {     // 没正常结束注释
                         LEXERROR(cast_int(LexError::COMMENT_NO_END));
                     }
-                    t = new Token(Tag::ERR);
+                    t = make_unique<Token>(Tag::ERR);
                 }
                 else {
-                    t = new Token(Tag::DIV);
+                    t = make_unique<Token>(Tag::DIV);
                 }
                 break;
             case '%':
-                t = new Token(Tag::MOD);
+                t = make_unique<Token>(Tag::MOD);
                 scan();
                 break;
             case '>':
-                t = new Token(scan('=') ? Tag::GE : Tag::GT);
+                t = make_unique<Token>(scan('=') ? Tag::GE : Tag::GT);
                 break;
             case '<':
-                t = new Token(scan('=') ? Tag::LE : Tag::LT);
+                t = make_unique<Token>(scan('=') ? Tag::LE : Tag::LT);
                 break;
             case '=':
-                t = new Token(scan('=') ? Tag::EQU : Tag::ASSIGN);
+                t = make_unique<Token>(scan('=') ? Tag::EQU : Tag::ASSIGN);
                 break;
             case '&':
-                t = new Token(scan('&') ? Tag::AND : Tag::LEA);
+                t = make_unique<Token>(scan('&') ? Tag::AND : Tag::LEA);
                 break;
             case '|':
-                t = new Token(scan('|') ? Tag::OR : Tag::ERR);
+                t = make_unique<Token>(scan('|') ? Tag::OR : Tag::ERR);
                 if (t->tag == Tag::ERR) {
                     LEXERROR(cast_int(LexError::OR_NO_PAIR));
                 }
                 break;
             case '!':
-                t = new Token(scan('=') ? Tag::NEQU : Tag::NOT);
+                t = make_unique<Token>(scan('=') ? Tag::NEQU : Tag::NOT);
                 break;
             case ',':
-                t = new Token(Tag::COMMA);
+                t = make_unique<Token>(Tag::COMMA);
                 scan();
                 break;
             case ':':
-                t = new Token(Tag::COLON);
+                t = make_unique<Token>(Tag::COLON);
                 scan();
                 break;
             case ';':
-                t = new Token(Tag::SEMICON);
+                t = make_unique<Token>(Tag::SEMICON);
                 scan();
                 break;
             case '(':
-                t = new Token(Tag::LPAREN);
+                t = make_unique<Token>(Tag::LPAREN);
                 scan();
                 break;
             case ')':
-                t = new Token(Tag::RPAREN);
+                t = make_unique<Token>(Tag::RPAREN);
                 scan();
                 break;
             case '[':
-                t = new Token(Tag::LBRACK);
+                t = make_unique<Token>(Tag::LBRACK);
                 scan();
                 break;
             case ']':
-                t = new Token(Tag::RBRACK);
+                t = make_unique<Token>(Tag::RBRACK);
                 scan();
                 break;
             case '{':
-                t = new Token(Tag::LBRACE);
+                t = make_unique<Token>(Tag::LBRACE);
                 scan();
                 break;
             case '}':
-                t = new Token(Tag::RBRACE);
+                t = make_unique<Token>(Tag::RBRACE);
                 scan();
                 break;
             case -1:
                 scan();
                 break;
             default:
-                t = new Token(Tag::ERR);
+                t = make_unique<Token>(Tag::ERR);
                 LEXERROR(cast_int(LexError::TOKEN_NO_EXIST));
                 scan();
             }
         }
 
-        if (token) {
-            delete token;
-        }
-        token = t;
+        token = std::move(t);
         if (token && token->tag != Tag::ERR) {
-            return token;
+            return std::move(token);
         }
         else {
             continue;
@@ -335,8 +328,6 @@ Token *Lexer::tokenize() {
     }
 
     // EOF
-    if (token) {
-        delete token;
-    }
-    return token = new Token(Tag::END);
+    token = make_unique<Token>(Tag::END);
+    return std::move(token);
 }

@@ -4,6 +4,7 @@
 #include "ass.h"
 #include "elf.h"
 
+#include <memory>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -34,19 +35,19 @@ class Elf_file
 {
 public:
     // elf 文件重要数据结构
-    Elf32_Ehdr ehdr;                                // 文件头
-    unordered_map<string, Elf32_Shdr *> shdrTab;    // 段表
-    vector<string> shdrNames;                       // 段表名和索引的映射关系, 方便符号查询自己的段信息
-    unordered_map<string, Elf32_Sym *> symTab;      // 符号表
-    vector<string> symNames;                        // 符号名与符号表项索引的映射关系, 对于重定位表生成重要
-    vector<RelInfo *> relTab;
+    Elf32_Ehdr ehdr;                                        // 文件头
+    unordered_map<string, unique_ptr<Elf32_Shdr>> shdrTab;  // 段表
+    vector<string> shdrNames;                               // 段表名和索引的映射关系, 方便符号查询自己的段信息
+    unordered_map<string, unique_ptr<Elf32_Sym>> symTab;    // 符号表
+    vector<string> symNames;                                // 符号名与符号表项索引的映射关系, 对于重定位表生成重要
+    vector<unique_ptr<RelInfo>> relTab;
 
     // 辅助数据
-    char *shstrtab = nullptr;   // 段表字符串表数据
-    int shstrtabSize = 0;       // 段表字符串表长
-    char *strtab = nullptr; // 字符串表数据
-    int strtabSize = 0;     // 字符串表长
-    vector<Elf32_Rel *> relTextTab, relDataTab;
+    unique_ptr<char[]> shstrtab;    // 段表字符串表数据
+    int shstrtabSize = 0;           // 段表字符串表长
+    unique_ptr<char[]> strtab;  // 字符串表数据
+    int strtabSize = 0;         // 字符串表长
+    vector<unique_ptr<Elf32_Rel>> relTextTab, relDataTab;
 
 public:
     Elf_file();
@@ -59,8 +60,8 @@ public:
                 Elf32_Word sh_size, Elf32_Word sh_link,
                 Elf32_Word sh_info, Elf32_Word sh_addralign,
                 Elf32_Word sh_entsize);         // 添加一个段表项
-    void addSym(lb_record *lb);
-    RelInfo *addRel(const string &seg, int addr,
+    void addSym(std::shared_ptr<lb_record> lb);
+    void addRel(const string &seg, int addr,
                     const string &lb, int type);            // 添加一个重定位项, 相同段的重定位项连续 (一般是先是.rel.text后.rel.data)
     void padSeg(const string &first, const string &second); // 填充段间的空隙
     void assmObj();                                         // 组装文件

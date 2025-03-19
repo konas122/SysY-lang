@@ -2,6 +2,7 @@
 #define __ASSEMBLER_ASS_H__
 
 #include <cstdio>
+#include <memory>
 #include <iostream>
 
 using namespace std;
@@ -66,7 +67,7 @@ extern string curSeg;       // 当前段名称
 extern int dataLen;         // 有效数据长度
 
 extern int inLen;           // 已经输出的指令长度, 调试用
-extern lb_record *relLb;    // 记录指令中可能需要重定位的标签
+extern shared_ptr<lb_record> relLb;    // 记录指令中可能需要重定位的标签
 struct ModRM;
 extern ModRM modrm;
 struct SIB;

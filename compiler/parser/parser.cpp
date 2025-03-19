@@ -61,10 +61,10 @@ bool Parser::match(Tag need) {
 
 void Parser::recovery(bool cond, SynError lost, SynError wrong) {
     if (cond) {
-        SYNERROR(cast_int(lost), look);
+        SYNERROR(cast_int(lost), look.get());
     }
     else {
-        SYNERROR(cast_int(wrong), look);
+        SYNERROR(cast_int(wrong), look.get());
         move();
     }
 }
@@ -110,13 +110,13 @@ Tag Parser::type() {
 Var *Parser::defdata(bool ext, Tag t) {
     string name;
     if (F(Tag::ID)) {
-        name = static_cast<Id *>(look)->name;
+        name = static_cast<Id *>(look.get())->name;
         move();
         return varrdef(ext, t, false, name);
     }
     else if (match(Tag::MUL)) {
         if (F(Tag::ID)) {
-            name = static_cast<Id *>(look)->name;
+            name = static_cast<Id *>(look.get())->name;
             move();
         }
         else {
@@ -159,7 +159,7 @@ Var *Parser::varrdef(bool ext, Tag t, bool ptr, const string &name) {
     if (match(Tag::LBRACK)) {
         int len = 0;
         if (F(Tag::NUM)) {
-            len = static_cast<Num *>(look)->val;
+            len = static_cast<Num *>(look.get())->val;
             move();
         }
         else {
@@ -193,7 +193,7 @@ void Parser::def(bool ext, Tag t) {
     string name;
     if (match(Tag::MUL)) {
         if (F(Tag::ID)) {
-            name = static_cast<Id *>(look)->name;
+            name = static_cast<Id *>(look.get())->name;
             move();
         }
         else {
@@ -204,7 +204,7 @@ void Parser::def(bool ext, Tag t) {
     }
     else {
         if (F(Tag::ID)) {
-            name = static_cast<Id *>(look)->name;
+            name = static_cast<Id *>(look.get())->name;
             move();
         }
         else {
@@ -242,7 +242,7 @@ Var *Parser::paradatatail(Tag t, string &name) {
     if (match(Tag::LBRACK)) {
         int len = 1;
         if (F(Tag::NUM)) {
-            len = static_cast<Num *>(look)->val;
+            len = static_cast<Num *>(look.get())->val;
             move();
         }
         if (!match(Tag::RBRACK)) {
@@ -260,7 +260,7 @@ Var *Parser::paradata(Tag t) {
     string name;
     if (match(Tag::MUL)) {
         if (F(Tag::ID)) {
-            name = static_cast<Id *>(look)->name;
+            name = static_cast<Id *>(look.get())->name;
             move();
         }
         else {
@@ -269,7 +269,7 @@ Var *Parser::paradata(Tag t) {
         return new Var(symtab.getScopePath(), false, t, true, name);
     }
     else if (F(Tag::ID)) {
-        name = static_cast<Id *>(look)->name;
+        name = static_cast<Id *>(look.get())->name;
         move();
         return paradatatail(t, name);
     }
@@ -880,7 +880,7 @@ Var *Parser::elem() {
     Var *v = nullptr;
 
     if (F(Tag::ID)) {
-        string name = static_cast<Id *>(look)->name;
+        string name = static_cast<Id *>(look.get())->name;
         move();
         v = idexpr(name);
     }
@@ -904,7 +904,7 @@ Var *Parser::literal() {
     Var *v = nullptr;
 
     if (F(Tag::NUM)_(Tag::STR)_(Tag::CH)) {
-        v = new Var(look);
+        v = new Var(look.get());
         if (F(Tag::STR)) {
             symtab.addStr(v);
         }

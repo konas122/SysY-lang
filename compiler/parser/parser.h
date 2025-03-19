@@ -1,6 +1,8 @@
 #ifndef __COMPILER_PARSER_H__
 #define __COMPILER_PARSER_H__
 
+#include <memory>
+
 #include "common.h"
 
 class Var;
@@ -79,7 +81,7 @@ class Parser
 
     // 词法分析
     Lexer &lexer;           // 词法分析器
-    Token *look = nullptr;  // 超前查看的字符
+    std::unique_ptr<Token> look = nullptr;  // 超前查看的字符
 
     // 符号表
     SymTab &symtab;

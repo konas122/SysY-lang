@@ -55,7 +55,7 @@ void lb_record::write() {
 
 // =============================================================================
 
-int Table::hasName(string name) {
+int Table::hasName(const string &name) {
     return (lb_map.find(name) != lb_map.end());
 }
 
@@ -73,7 +73,7 @@ void Table::switchSeg() {
 
 void Table::exportSyms() {
     for (const auto &pair : lb_map) {
-        lb_record *lr = pair.second;
+        auto lr = pair.second;
         if (!lr->isEqu) {
             obj.addSym(lr);
         }
@@ -94,22 +94,19 @@ void Table::write() {
 }
 
 Table::~Table() {
-    for (auto lb_i = lb_map.begin(); lb_i != lb_map.end(); lb_i++) {
-        delete lb_i->second;
-    }
     lb_map.clear();
 }
 
-void Table::addlb(lb_record *p_lb) {
+void Table::addlb(shared_ptr<lb_record> p_lb) {
     if (scanLop != 1) { // 只在第一遍添加新符号
-        delete p_lb;    // 不添加
+        p_lb.reset();    // 不添加
         return;
     }
 
     if (hasName(p_lb->lbName)) {    // 符号存在
         // 本地符号覆盖外部符号
         if (lb_map[p_lb->lbName]->externed == true && p_lb->externed == false) {
-            delete lb_map[p_lb->lbName];
+            lb_map[p_lb->lbName].reset();
             lb_map[p_lb->lbName] = p_lb;
         }
         // else情况不会出现, 符号已经定义就不可能找不到该符号而产生未定义符号
@@ -124,14 +121,14 @@ void Table::addlb(lb_record *p_lb) {
     }
 }
 
-lb_record *Table::getlb(string name) {
-    lb_record *ret;
+shared_ptr<lb_record> Table::getlb(const string &name) {
+    shared_ptr<lb_record> ret;
     if (hasName(name)) {
         ret = lb_map[name];
     }
     else {
         // 未知符号, 添加到符号表 (仅仅添加了一次, 第一次扫描添加的)
-        lb_record *p_lb = lb_map[name] = new lb_record(name, true);
+        auto p_lb = lb_map[name] = make_shared<lb_record>(name, true);
         ret = p_lb;
     }
 
