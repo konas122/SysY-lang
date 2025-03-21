@@ -76,7 +76,7 @@ Scope *Scope::find(int i) {
 
 // =============================================================================
 
-CoGraph::CoGraph(list<InterInst *> &optCode, vector<Var *> &para, LiveVar *lv, Fun *f) {
+CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, LiveVar *lv, Fun *f) {
     scRoot = nullptr;
 
     fun = f;

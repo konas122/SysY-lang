@@ -1,6 +1,8 @@
 #ifndef __OPTIMIZE_CONSTPROP_H__
 #define __OPTIMIZE_CONSTPROP_H__
 
+#include <memory>
+
 #include "common.h"
 
 #define UNDEF   0.5     // 表示变量未定义, 未初始化
@@ -18,18 +20,18 @@ class InterInst;
 class ConstPropagation
 {
     SymTab *tab;        // 符号表
-    DFG *dfg;           // 数据流图指针
+    std::shared_ptr<DFG> dfg;       // 数据流图指针
 
     std::vector<Var *> vars;        // 变量集合
     std::vector<Var *> glbVars;     // 全局变量的集合, G 处理函数调用等附加影响操作
     std::vector<double> boundVals;  // 边界集合, Entry.out
     std::vector<double> initVals;   // 初值集合, B.out/B.out
 
-    void join(Block *block);        // 交汇运算
+    void join(std::shared_ptr<Block> block);        // 交汇运算
     static double join(double left, double right);  // 元素交汇运算
 
-    void translate(InterInst *inst, const std::vector<double> &in, std::vector<double> &out);   // 单指令传递函数
-    bool translate(Block *block);   // 传递函数 fB
+    void translate(std::shared_ptr<InterInst> inst, const std::vector<double> &in, std::vector<double> &out);   // 单指令传递函数
+    bool translate(std::shared_ptr<Block> block);   // 传递函数 fB
 
     void analyse();         // 常量传播分析
     void algebraSimplify(); // 代数化简
@@ -39,7 +41,7 @@ public:
     ConstPropagation(const ConstPropagation &rhs) = delete;
     ConstPropagation &operator=(const ConstPropagation &rhs) = delete;
 
-    ConstPropagation(DFG *g, SymTab *tab, std::vector<Var *> &paraVar); // 常量传播分析初始化
+    ConstPropagation(std::shared_ptr<DFG> g, SymTab *tab, std::vector<Var *> &paraVar); // 常量传播分析初始化
     void propagate();   // 执行常量传播
 };
 

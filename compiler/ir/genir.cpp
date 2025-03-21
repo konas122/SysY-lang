@@ -57,7 +57,7 @@ void GenIR::genPara(Var *arg) {
     // Var *newVar=new Var(symtab.getScopePath(), arg);    // 创建参数变量
     // symtab.addVar(newVar);   // 添加无效变量, 占领栈帧
 
-    InterInst *argInst = new InterInst(Operator::OP_ARG, arg);  // push arg
+    auto argInst = make_shared<InterInst>(Operator::OP_ARG, arg);  // push arg
 
     // argInst->offset = newVar->getOffset();  // 将变量的地址与 arg 指令地址共享. 没有优化地址也能用
     // argInst->path = symtab.getScopePath();  // 记录路径. 为了寄存器分配时计算地址
@@ -75,12 +75,12 @@ Var *GenIR::genCall(Fun *function, vector<Var *>& args) {
     }
 
     if (function->getType() == Tag::KW_VOID) {
-        symtab.addInst(new InterInst(Operator::OP_PROC, function));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_PROC, function));
         return Var::getVoid();
     }
     else {
         Var *ret = new Var(symtab.getScopePath(), function->getType(), false);
-        symtab.addInst(new InterInst(Operator::OP_CALL, function, ret));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_CALL, function, ret));
         symtab.addVar(ret);
         return ret;
     }
@@ -168,7 +168,7 @@ Var *GenIR::genAssign(Var *lval, Var *rval) {
     if (rval->isRef()) {
         if (!lval->isRef()) {
             // lval = *(rval->ptr)
-            symtab.addInst(new InterInst(Operator::OP_GET, lval, rval->getPointer()));
+            symtab.addInst(make_shared<InterInst>(Operator::OP_GET, lval, rval->getPointer()));
             return lval;
         }
         else {
@@ -179,11 +179,11 @@ Var *GenIR::genAssign(Var *lval, Var *rval) {
 
     if (lval->isRef()) {
         // *(lval->ptr) = rval
-        symtab.addInst(new InterInst(Operator::OP_SET, rval, lval->getPointer()));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_SET, rval, lval->getPointer()));
     }
     else {
         // lval = rval
-        symtab.addInst(new InterInst(Operator::OP_AS, lval, rval));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_AS, lval, rval));
     }
     return lval;
 }
@@ -193,11 +193,11 @@ Var *GenIR::genAssign(Var *val) {
     symtab.addVar(tmp);
     if (val->isRef()) {
         // tmp = *(val->ptr)
-        symtab.addInst(new InterInst(Operator::OP_GET, tmp, val->getPointer()));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_GET, tmp, val->getPointer()));
     }
     else {
         // tmp = val
-        symtab.addInst(new InterInst(Operator::OP_AS, tmp, val));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_AS, tmp, val));
     }
     return tmp;
 }
@@ -205,56 +205,56 @@ Var *GenIR::genAssign(Var *val) {
 Var *GenIR::genOr(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_OR, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_OR, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genAnd(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_AND, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_AND, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genGt(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_GT, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_GT, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genGe(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_GE, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_GE, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genLt(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_LT, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_LT, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genLe(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_LE, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_LE, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genEqu(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_EQU, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_EQU, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genNequ(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_NE, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_NE, tmp, lval, rval));
     return tmp;
 }
 
@@ -277,7 +277,7 @@ Var *GenIR::genAdd(Var *lval, Var *rval) {
     }
 
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_ADD, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_ADD, tmp, lval, rval));
     return tmp;
 }
 
@@ -298,28 +298,28 @@ Var *GenIR::genSub(Var *lval, Var *rval) {
     }
 
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_SUB, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_SUB, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genMul(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_MUL, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_MUL, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genDiv(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_DIV, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_DIV, tmp, lval, rval));
     return tmp;
 }
 
 Var *GenIR::genMod(Var *lval, Var *rval) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_MOD, tmp, lval, rval));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_MOD, tmp, lval, rval));
     return tmp;
 }
 
@@ -360,7 +360,7 @@ Var *GenIR::genOneOpLeft(Tag opt, Var *val) {
 Var *GenIR::genNot(Var *val) {
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_NOT, tmp, val));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_NOT, tmp, val));
     return tmp;
 }
 
@@ -371,7 +371,7 @@ Var *GenIR::genMinus(Var *val) {
     }
     Var *tmp = new Var(symtab.getScopePath(), Tag::KW_INT, false);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_NEG, tmp, val));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_NEG, tmp, val));
     return tmp;
 }
 
@@ -386,7 +386,7 @@ Var *GenIR::genIncL(Var *val) {
         Var *t2 = genAdd(t1, Var::getStep(val));
         return genAssign(val, t2);
     }
-    symtab.addInst(new InterInst(Operator::OP_ADD, val, val, Var::getStep(val)));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_ADD, val, val, Var::getStep(val)));
     return val;
 }
 
@@ -400,7 +400,7 @@ Var *GenIR::genDecL(Var *val) {
         Var *t2 = genSub(t1, Var::getStep(val));
         return genAssign(val, t2);
     }
-    symtab.addInst(new InterInst(Operator::OP_SUB, val, val, Var::getStep(val)));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_SUB, val, val, Var::getStep(val)));
     return val;
 }
 
@@ -415,7 +415,7 @@ Var *GenIR::genLea(Var *val) {
     }
     Var *tmp = new Var(symtab.getScopePath(), val->getType(), true);
     symtab.addVar(tmp);
-    symtab.addInst(new InterInst(Operator::OP_LEA, tmp, val));  // 中间代码: tmp = &val
+    symtab.addInst(make_shared<InterInst>(Operator::OP_LEA, tmp, val));  // 中间代码: tmp = &val
     return tmp;
 }
 
@@ -455,13 +455,13 @@ Var *GenIR::genOneOpRight(Var *val, Tag opt) {
 
 Var *GenIR::genIncR(Var *val) {
     Var *tmp = genAssign(val);
-    symtab.addInst(new InterInst(Operator::OP_ADD, val, val, Var::getStep(val)));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_ADD, val, val, Var::getStep(val)));
     return tmp;
 }
 
 Var *GenIR::genDecR(Var *val) {
     Var *tmp = genAssign(val);
-    symtab.addInst(new InterInst(Operator::OP_SUB, val, val, Var::getStep(val)));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_SUB, val, val, Var::getStep(val)));
     return tmp;
 }
 
@@ -479,20 +479,20 @@ bool GenIR::typeCheck(const Var *lval, const Var *rval) {
     return flag;
 }
 
-void GenIR::genWhileHead(InterInst *&_while, InterInst *&_exit) {
-    // InterInst* _blank=new InterInst();
-    // symtab.addInst(new InterInst(Operator::OP_JMP, _blank));
+void GenIR::genWhileHead(shared_ptr<InterInst>&_while, shared_ptr<InterInst>&_exit) {
+    // InterInst* _blank=make_shared<InterInst>();
+    // symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _blank));
 
-    _while = new InterInst();
+    _while = make_shared<InterInst>();
     symtab.addInst(_while);
 
     // symtab.addInst(_blank);
 
-    _exit = new InterInst();
+    _exit = make_shared<InterInst>();
     push(_while, _exit);
 }
 
-void GenIR::genWhileCond(Var *cond, InterInst *_exit) {
+void GenIR::genWhileCond(Var *cond, shared_ptr<InterInst>_exit) {
     if (cond) {
         if (cond->isVoid()) {
             cond = Var::getTrue();
@@ -500,24 +500,24 @@ void GenIR::genWhileCond(Var *cond, InterInst *_exit) {
         else if (cond->isRef()) {
             cond = genAssign(cond);
         }
-        symtab.addInst(new InterInst(Operator::OP_JF, _exit, cond));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JF, _exit, cond));
     }
 }
 
-void GenIR::genWhileTail(InterInst *&_while, InterInst *&_exit) {
-    symtab.addInst(new InterInst(Operator::OP_JMP, _while));
+void GenIR::genWhileTail(shared_ptr<InterInst>&_while, shared_ptr<InterInst>&_exit) {
+    symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _while));
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genDoWhileHead(InterInst *&_do, InterInst *&_exit) {
-    _do = new InterInst();
-    _exit = new InterInst();
+void GenIR::genDoWhileHead(shared_ptr<InterInst>&_do, shared_ptr<InterInst>&_exit) {
+    _do = make_shared<InterInst>();
+    _exit = make_shared<InterInst>();
     symtab.addInst(_do);
     push(_do, _exit);
 }
 
-void GenIR::genDoWhileTail(Var *cond, InterInst *_do, InterInst *_exit) {
+void GenIR::genDoWhileTail(Var *cond, shared_ptr<InterInst>_do, shared_ptr<InterInst>_exit) {
     if (cond) {
         if (cond->isVoid()) {
             cond = Var::getTrue();
@@ -525,21 +525,21 @@ void GenIR::genDoWhileTail(Var *cond, InterInst *_do, InterInst *_exit) {
         else if (cond->isRef()) {
             cond = genAssign(cond);
         }
-        symtab.addInst(new InterInst(Operator::OP_JT, _do, cond));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JT, _do, cond));
     }
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genForHead(InterInst *&_for, InterInst *&_exit) {
-    _for = new InterInst();
-    _exit = new InterInst();
+void GenIR::genForHead(shared_ptr<InterInst>&_for, shared_ptr<InterInst>&_exit) {
+    _for = make_shared<InterInst>();
+    _exit = make_shared<InterInst>();
     symtab.addInst(_for);
 }
 
-void GenIR::genForCondBegin(Var *cond, InterInst *&_step, InterInst *&_block, InterInst *_exit) {
-    _block = new InterInst();
-    _step = new InterInst();
+void GenIR::genForCondBegin(Var *cond, shared_ptr<InterInst>&_step, shared_ptr<InterInst>&_block, shared_ptr<InterInst>_exit) {
+    _block = make_shared<InterInst>();
+    _step = make_shared<InterInst>();
     if (cond) {
         if (cond->isVoid()) {
             cond = Var::getTrue();
@@ -547,74 +547,74 @@ void GenIR::genForCondBegin(Var *cond, InterInst *&_step, InterInst *&_block, In
         else if (cond->isRef()) {
             cond = genAssign(cond);
         }
-        symtab.addInst(new InterInst(Operator::OP_JF, _exit, cond));
-        symtab.addInst(new InterInst(Operator::OP_JMP, _block));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JF, _exit, cond));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _block));
     }
     symtab.addInst(_step);
     push(_step, _exit);
 }
 
-void GenIR::genForCondEnd(InterInst *_for, InterInst *_block) {
-    symtab.addInst(new InterInst(Operator::OP_JMP, _for));
+void GenIR::genForCondEnd(shared_ptr<InterInst>_for, shared_ptr<InterInst>_block) {
+    symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _for));
     symtab.addInst(_block);
 }
 
-void GenIR::genForTail(InterInst *&_step, InterInst *&_exit) {
-    symtab.addInst(new InterInst(Operator::OP_JMP, _step));
+void GenIR::genForTail(shared_ptr<InterInst>&_step, shared_ptr<InterInst>&_exit) {
+    symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _step));
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genIfHead(Var *cond, InterInst *&_else) {
-    _else = new InterInst();
+void GenIR::genIfHead(Var *cond, shared_ptr<InterInst>&_else) {
+    _else = make_shared<InterInst>();
     if (cond) {
         if (cond->isRef()) {
             cond = genAssign(cond);
         }
-        symtab.addInst(new InterInst(Operator::OP_JF, _else, cond));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JF, _else, cond));
     }
 }
 
-void GenIR::genIfTail(InterInst *&_else) {
+void GenIR::genIfTail(shared_ptr<InterInst>&_else) {
     symtab.addInst(_else);
 }
 
-void GenIR::genElseHead(InterInst *_else, InterInst *&_exit) {
-    _exit = new InterInst();
-    symtab.addInst(new InterInst(Operator::OP_JMP, _exit));
+void GenIR::genElseHead(shared_ptr<InterInst>_else, shared_ptr<InterInst>&_exit) {
+    _exit = make_shared<InterInst>();
+    symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _exit));
     symtab.addInst(_else);
 }
 
-void GenIR::genElseTail(InterInst *&_exit) {
+void GenIR::genElseTail(shared_ptr<InterInst>&_exit) {
     symtab.addInst(_exit);
 }
 
-void GenIR::genSwitchHead(InterInst *&_exit) {
-    _exit = new InterInst();
+void GenIR::genSwitchHead(shared_ptr<InterInst>&_exit) {
+    _exit = make_shared<InterInst>();
     push(nullptr, _exit);
 }
 
-void GenIR::genSwitchTail(InterInst *_exit) {
+void GenIR::genSwitchTail(shared_ptr<InterInst>_exit) {
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genCaseHead(Var *cond, Var *lb, InterInst *& _case_exit) {
-    _case_exit = new InterInst();
+void GenIR::genCaseHead(Var *cond, Var *lb, shared_ptr<InterInst>& _case_exit) {
+    _case_exit = make_shared<InterInst>();
     if (lb) {
-        symtab.addInst(new InterInst(Operator::OP_JNE, _case_exit, cond, lb));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JNE, _case_exit, cond, lb));
     }
 }
 
-void GenIR::genCaseTail(InterInst *_case_exit) {
+void GenIR::genCaseTail(shared_ptr<InterInst>_case_exit) {
     symtab.addInst(_case_exit);
-    // InterInst *_case_exit_append = new InterInst();
-    // symtab.addInst(new InterInst(Operator::OP_JMP, _case_exit_append));
+    // shared_ptr<InterInst>_case_exit_append = make_shared<InterInst>();
+    // symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _case_exit_append));
     // symtab.addInst(_case_exit);
     // symtab.addInst(_case_exit_append);
 }
 
-void GenIR::push(InterInst *head, InterInst *tail) {
+void GenIR::push(shared_ptr<InterInst>head, shared_ptr<InterInst>tail) {
     heads.push_back(head);
     tails.push_back(tail);
 }
@@ -625,9 +625,9 @@ void GenIR::pop() {
 }
 
 void GenIR::genBreak() {
-    InterInst *tail = tails.back();
+    auto tail = tails.back();
     if (tail) {
-        symtab.addInst(new InterInst(Operator::OP_JMP, tail));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, tail));
     }
     else {
         SEMERROR(cast_int(SemError::BREAK_ERR));
@@ -635,9 +635,9 @@ void GenIR::genBreak() {
 }
 
 void GenIR::genContinue() {
-    InterInst *head = heads.back();
+    auto head = heads.back();
     if (head) {
-        symtab.addInst(new InterInst(Operator::OP_JMP, head));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, head));
     }
     else {
         SEMERROR(cast_int(SemError::CONTINUE_ERR));
@@ -654,15 +654,15 @@ void GenIR::genReturn(Var *ret) {
         SEMERROR(cast_int(SemError::RETURN_ERR));
         return;
     }
-    InterInst *returnPoint = fun->getReturnPoint();
+    auto returnPoint = fun->getReturnPoint();
     if (ret->isVoid()) {
-        symtab.addInst(new InterInst(Operator::OP_RET, returnPoint));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_RET, returnPoint));
     }
     else {
         if (ret->isRef()) {
             ret = genAssign(ret);
         }
-        symtab.addInst(new InterInst(Operator::OP_RETV, returnPoint, ret));
+        symtab.addInst(make_shared<InterInst>(Operator::OP_RETV, returnPoint, ret));
     }
 }
 
@@ -672,7 +672,7 @@ bool GenIR::genVarInit(Var *var)
         return 0;
     }
 
-    symtab.addInst(new InterInst(Operator::OP_DEC, var));   // 添加变量声明指令
+    symtab.addInst(make_shared<InterInst>(Operator::OP_DEC, var));   // 添加变量声明指令
     if (var->setInit()) {
         genTwoOp(var, Tag::ASSIGN, var->getInitData());
     }
@@ -682,12 +682,12 @@ bool GenIR::genVarInit(Var *var)
 
 void GenIR::genFunHead(Fun *function) {
     function->enterScope();
-    symtab.addInst(new InterInst(Operator::OP_ENTRY, function));
-    function->setReturnPoint(new InterInst);
+    symtab.addInst(make_shared<InterInst>(Operator::OP_ENTRY, function));
+    function->setReturnPoint(make_shared<InterInst>());
 }
 
 void GenIR::genFunTail(Fun *function) {
     symtab.addInst(function->getReturnPoint());
-    symtab.addInst(new InterInst(Operator::OP_EXIT, function));
+    symtab.addInst(make_shared<InterInst>(Operator::OP_EXIT, function));
     function->leaveScope();
 }

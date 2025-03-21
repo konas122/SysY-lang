@@ -7,7 +7,7 @@
 using namespace std;
 
 
-CopyPropagation::CopyPropagation(DFG *g) : dfg(g)
+CopyPropagation::CopyPropagation(shared_ptr<DFG> g) : dfg(g)
 {
     dfg->toCode(optCode);   // 提取中间代码
 
@@ -45,7 +45,7 @@ CopyPropagation::CopyPropagation(DFG *g) : dfg(g)
 }
 
 // 复写传播传递函数: f(x)=(x - kill(B)) | gen(B)
-bool CopyPropagation::translate(Block *block) {
+bool CopyPropagation::translate(shared_ptr<Block> block) {
     Set tmp = block->copyInfo.in;
     for (auto inst : block->insts) {
         Set &in = inst->copyInfo.in;
@@ -69,7 +69,7 @@ void CopyPropagation::analyse() {
     while (change) {
         change = false;
         for (size_t i = 1; i < dfg->blocks.size(); ++i) {
-            Block *block = dfg->blocks[i];
+            auto block = dfg->blocks[i];
             if (!block->canReach) {
                 continue;
             }

@@ -1,6 +1,8 @@
 #ifndef __OPTIMIZE_ALLOC_H__
 #define __OPTIMIZE_ALLOC_H__
 
+#include <memory>
+
 #include "common.h"
 #include "optimize/set.h"
 
@@ -62,8 +64,8 @@ class CoGraph
         }
     };
 
-    std::list<InterInst *> optCode;     // 中间代码
-    LiveVar *lv = nullptr;              // 活跃变量分析对象, 使用该对象提供集合对应的变量信息
+    std::list<std::shared_ptr<InterInst>> optCode;  // 中间代码
+    LiveVar *lv = nullptr;                          // 活跃变量分析对象, 使用该对象提供集合对应的变量信息
     std::vector<Node *> nodes;          // 图节点数组, 图着色选择最大度节点时, 使用堆排序
     std::vector<Var *> varList;         // 变量列表, 缓存所有需要分配的变量
 
@@ -84,7 +86,7 @@ public:
     CoGraph(const CoGraph &rhs) = delete;
     CoGraph &operator=(const CoGraph &rhs) = delete;
 
-    CoGraph(std::list<InterInst *> &optCode, std::vector<Var *> &para, LiveVar *lv, Fun *f);
+    CoGraph(std::list<std::shared_ptr<InterInst>> &optCode, std::vector<Var *> &para, LiveVar *lv, Fun *f);
     ~CoGraph();
     void alloc();
 };

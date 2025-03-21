@@ -11,7 +11,7 @@
 using namespace std;
 
 
-ConstPropagation::ConstPropagation(DFG *g, SymTab *t, vector<Var *>& paraVar)
+ConstPropagation::ConstPropagation(shared_ptr<DFG> g, SymTab *t, vector<Var *>& paraVar)
     : tab(t), dfg(g)
 {
     glbVars = tab->getGlbVars();
@@ -81,8 +81,8 @@ double ConstPropagation::join(double left, double right) {
 }
 
 // 集合交汇运算
-void ConstPropagation::join(Block *block) {
-    list<Block *> &prevs = block->prevs;
+void ConstPropagation::join(shared_ptr<Block> block) {
+    list<shared_ptr<Block>> &prevs = block->prevs;
     vector<double> &in = block->inVals;
 
     int prevCount = prevs.size();   // 前驱个数
@@ -98,7 +98,7 @@ void ConstPropagation::join(Block *block) {
     for (size_t i = 0; i < in.size(); ++i) {
         double val = std::accumulate(
             prevs.cbegin(), prevs.cend(), UNDEF,
-            [i](const double val, const Block *block)
+            [i](const double val, const shared_ptr<Block> block)
             {
                 return join(val, block->outVals[i]);
             });
@@ -108,7 +108,7 @@ void ConstPropagation::join(Block *block) {
 }
 
 // 单指令传递函数
-void ConstPropagation::translate(InterInst *inst, const vector<double> &in, vector<double> &out) {
+void ConstPropagation::translate(shared_ptr<InterInst> inst, const vector<double> &in, vector<double> &out) {
     out = in;
     Operator op = inst->getOp();
 
@@ -254,7 +254,7 @@ void ConstPropagation::translate(InterInst *inst, const vector<double> &in, vect
     inst->outVals = out;
 }
 
-bool ConstPropagation::translate(Block *block) {
+bool ConstPropagation::translate(shared_ptr<Block> block) {
     vector<double> in = block->inVals;
     vector<double> out = block->outVals;
 
@@ -308,7 +308,7 @@ void ConstPropagation::propagate() {
  * @example a=1+2 -> a=3
  */
 void ConstPropagation::algebraSimplify() {
-    for (const auto block : dfg->blocks) {
+    for (const auto &block : dfg->blocks) {
         for (auto inst : block->insts) {
             Operator op = inst->getOp();
             if (inst->isExpr()) {
@@ -478,10 +478,10 @@ void ConstPropagation::condJmpOpt() {
              i != dfg->blocks[j]->insts.end(); i = k)
         {
             ++k;    // 记录下一个迭代器, 防止遍历时发生指令删除
-            InterInst *inst = *i;
+            auto inst = *i;
             if (inst->isJcond()) {
                 Operator op = inst->getOp();
-                InterInst *tar = inst->getTarget();
+                auto tar = inst->getTarget();
                 const Var *arg1 = inst->getArg1();
 
                 double cond = NAC;

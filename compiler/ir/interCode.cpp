@@ -5,7 +5,7 @@
 using namespace std;
 
 
-void InterCode::addInst(InterInst *inst) {
+void InterCode::addInst(shared_ptr<InterInst> inst) {
     code.emplace_back(inst);
 }
 
@@ -15,11 +15,8 @@ void InterCode::toString() const {
     }
 }
 
-InterCode::~InterCode() {
-    for (size_t i = 0; i < code.size(); i++) {
-        delete code[i];
-    }
-}
+InterCode::~InterCode()
+{}
 
 void InterCode::markFirst() {
     size_t len = code.size();   // 指令个数, 最少为 2
@@ -42,6 +39,6 @@ void InterCode::markFirst() {
     }
 }
 
-vector<InterInst *> &InterCode::getCode() {
+vector<shared_ptr<InterInst>> &InterCode::getCode() {
     return code;
 }

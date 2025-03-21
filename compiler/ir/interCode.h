@@ -1,6 +1,8 @@
 #ifndef __IR_INTERCODE_H__
 #define __IR_INTERCODE_H__
 
+#include <memory>
+
 #include "common.h"
 
 class InterInst;
@@ -8,7 +10,7 @@ class InterInst;
 
 class InterCode
 {
-    std::vector<InterInst *> code;
+    std::vector<std::shared_ptr<InterInst>> code;
 
 public:
     InterCode() = default;
@@ -17,10 +19,10 @@ public:
     InterCode &operator=(const InterCode &rhs) = delete;
 
     ~InterCode();
-    void addInst(InterInst *inst);
+    void addInst(std::shared_ptr<InterInst> inst);
     void markFirst();
     void toString() const;
-    std::vector<InterInst *> &getCode();
+    std::vector<std::shared_ptr<InterInst>> &getCode();
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include <memory>
 #include <cassert>
 
 #include "error.h"
@@ -422,7 +423,7 @@ void Parser::statement() {
  */
 void Parser::whilestat() {
     symtab.enter();
-    InterInst *_while, *_exit;      // 标签
+    shared_ptr<InterInst> _while, _exit;      // 标签
 
     ir.genWhileHead(_while, _exit); // while 循环头部
     match(Tag::KW_WHILE);
@@ -454,7 +455,7 @@ void Parser::whilestat() {
 */
 void Parser::dowhilestat() {
     symtab.enter();
-    InterInst *_do, *_exit;         // 标签
+    shared_ptr<InterInst> _do, _exit;         // 标签
     ir.genDoWhileHead(_do, _exit);  // do-while 头部
 
     match(Tag::KW_DO);
@@ -490,7 +491,7 @@ void Parser::dowhilestat() {
 */
 void Parser::forstat() {
     symtab.enter();
-    InterInst *_for, *_exit, *_step, *_block;   // 标签
+    shared_ptr<InterInst> _for, _exit, _step, _block;   // 标签
 
     match(Tag::KW_FOR);
     if (!match(Tag::LPAREN)) {
@@ -542,7 +543,7 @@ void Parser::forinit() {
  */
 void Parser::ifstat() {
     symtab.enter();
-    InterInst *_else, *_exit;
+    shared_ptr<InterInst> _else, _exit;
 
     match(Tag::KW_IF);
     if (!match(Tag::LPAREN)) {
@@ -595,7 +596,7 @@ void Parser::elsestat() {
 void Parser::switchstat() {
     symtab.enter();
 
-    InterInst *_exit;
+    shared_ptr<InterInst> _exit;
     ir.genSwitchHead(_exit);
 
     match(Tag::KW_SWITCH);
@@ -628,7 +629,7 @@ void Parser::switchstat() {
  */
 void Parser::casestat(Var *cond) {
     if (match(Tag::KW_CASE)) {
-        InterInst *_case_exit;
+        shared_ptr<InterInst> _case_exit;
         Var *lb = caselabel();
         ir.genCaseHead(cond, lb, _case_exit);
 

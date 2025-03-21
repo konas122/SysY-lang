@@ -45,7 +45,6 @@ Fun::Fun(bool ext, Tag t, std::string_view n, const vector<Var *> &paraList)
 
 Fun::~Fun() {
     if (dfg) {
-        delete dfg;
         dfg = nullptr;
     }
 }
@@ -101,15 +100,15 @@ void Fun::define(const Fun *def) {
     paraVar = def->paraVar;
 }
 
-void Fun::addInst(InterInst *inst) {
+void Fun::addInst(shared_ptr<InterInst> inst) {
     interCode.addInst(inst);
 }
 
-void Fun::setReturnPoint(InterInst *inst) {
+void Fun::setReturnPoint(shared_ptr<InterInst> inst) {
     returnPoint = inst;
 }
 
-InterInst *Fun::getReturnPoint() {
+shared_ptr<InterInst> Fun::getReturnPoint() {
     return returnPoint;
 }
 
@@ -193,7 +192,7 @@ void Fun::printOptCode() const {
         return;
     }
     printf("-------------<%s>Start--------------\n", name.c_str());
-    for (list<InterInst *>::const_iterator i = optCode.begin(); i != optCode.end(); ++i) {
+    for (list<shared_ptr<InterInst>>::const_iterator i = optCode.begin(); i != optCode.end(); ++i) {
         (*i)->toString();
     }
     printf("--------------<%s>End---------------\n", name.c_str());
@@ -205,7 +204,7 @@ void Fun::optimize(SymTab *tab) {
     }
 
     // 数据流图
-    dfg = new DFG(interCode);   // 创建数据流图
+    dfg = make_shared<DFG>(interCode);   // 创建数据流图
     if (Args::showBlock) {
         dfg->toString(); // 输出基本块和流图关系
     }
@@ -246,9 +245,9 @@ void Fun::genAsm(FILE *file) {
     }
 
     // 导出最终的代码, 如果优化则是优化后的中间代码, 否则就是普通的中间代码
-    vector<InterInst *> code;
+    vector<shared_ptr<InterInst>> code;
     if (Args::opt) {    // 经过优化
-        for (list<InterInst *>::const_iterator it = optCode.begin(); it != optCode.end(); ++it) {
+        for (list<shared_ptr<InterInst>>::const_iterator it = optCode.begin(); it != optCode.end(); ++it) {
             code.emplace_back(*it);
         }
     }

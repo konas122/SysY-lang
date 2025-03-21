@@ -57,7 +57,7 @@ InterInst::InterInst() {
     label = GenIR::genLb();
 }
 
-InterInst::InterInst(Operator op, InterInst *tar, Var *arg1, Var *arg2) {
+InterInst::InterInst(Operator op, shared_ptr<InterInst> tar, Var *arg1, Var *arg2) {
     init();
     this->op = op;
     this->target = tar;
@@ -72,7 +72,7 @@ void InterInst::replace(Operator op, Var *rs, Var *arg1, Var *arg2) {
     this->arg2 = arg2;
 }
 
-void InterInst::replace(Operator op, InterInst *tar, Var *arg1, Var *arg2) {
+void InterInst::replace(Operator op, shared_ptr<InterInst> tar, Var *arg1, Var *arg2) {
     this->op = op;
     this->target = tar;
     this->arg1 = arg1;
@@ -357,7 +357,7 @@ Operator InterInst::getOp() const {
     return op;
 }
 
-InterInst *InterInst::getTarget() {
+shared_ptr<InterInst> InterInst::getTarget() {
     return target;
 }
 

@@ -1,6 +1,8 @@
 #ifndef __IR_INTERINST_H__
 #define __IR_INTERINST_H__
 
+#include <memory>
+
 #include "common.h"
 #include "optimize/set.h"
 
@@ -19,13 +21,13 @@ class InterInst
     Var *arg1;
     Var *arg2;
     Fun *fun;
-    InterInst *target;
+    std::shared_ptr<InterInst> target;
 
     bool first;     // 是否是首指令
     void init();    // 初始化
 
 public:
-    Block *block;   // 指令所在的基本块指针
+    std::shared_ptr<Block> block;   // 指令所在的基本块指针
 
     // 数据流信息
     std::vector<double> inVals;     // 常量传播 in 集合
@@ -41,10 +43,10 @@ public:
     InterInst(Operator op, Fun *fun, Var *rs = nullptr);                // 函数调用指令, ENTRY,EXIT
     explicit InterInst(Operator op, Var *arg1 = nullptr);               // 参数进栈指令, NOP
     InterInst();                                                        // 产生唯一标号
-    InterInst(Operator op, InterInst *tar, Var *arg1 = nullptr, Var *arg2 = nullptr);   // 条件跳转指令, return
+    InterInst(Operator op, std::shared_ptr<InterInst> tar, Var *arg1 = nullptr, Var *arg2 = nullptr);   // 条件跳转指令, return
 
     void replace(Operator op, Var *rs, Var *arg1, Var *arg2 = nullptr);                     // 替换表达式指令信息, 用于常量表达式处理
-    void replace(Operator op, InterInst *tar, Var *arg1 = nullptr, Var *arg2 = nullptr);    // 替换跳转指令信息, 条件跳转优化
+    void replace(Operator op, std::shared_ptr<InterInst> tar, Var *arg1 = nullptr, Var *arg2 = nullptr);    // 替换跳转指令信息, 条件跳转优化
     ~InterInst();
 
     void setFirst();    // 标记首指令
@@ -59,7 +61,7 @@ public:
 
     Operator getOp() const; // 获取操作符
     void callToProc();      // 替换操作符, 用于将 CALL 转化为 PROC
-    InterInst *getTarget(); // 获取跳转指令的目标指令
+    std::shared_ptr<InterInst> getTarget(); // 获取跳转指令的目标指令
     Var *getResult();       // 获取返回值
     Var *getArg1();         // 获取第一个参数
     Var *getArg2();         // 获取第二个参数

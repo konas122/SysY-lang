@@ -209,12 +209,9 @@ void SymTab::endDefFun() {
     curFun = nullptr;
 }
 
-void SymTab::addInst(InterInst *inst) {
+void SymTab::addInst(shared_ptr<InterInst> inst) {
     if (curFun) {
         curFun->addInst(inst);
-    }
-    else {
-        delete inst;
     }
 }
 

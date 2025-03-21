@@ -1,6 +1,8 @@
 #ifndef __COMPILER_SYMBOL_H__
 #define __COMPILER_SYMBOL_H__
 
+#include <memory>
+
 #include "common.h"
 #include "lexer/token.h"
 
@@ -29,9 +31,9 @@ class Fun
     // 作用域管理
     std::vector<int> scopeEsp;      // 当前作用域初始 esp, 动态控制作用域的分配和释放
     InterCode interCode;            // 中间代码
-    InterInst *returnPoint;         // 返回点
-    DFG *dfg;                       // 数据流图指针
-    std::list<InterInst *> optCode; // 优化后的中间代码
+    std::shared_ptr<InterInst> returnPoint;         // 返回点
+    std::shared_ptr<DFG> dfg;                       // 数据流图指针
+    std::list<std::shared_ptr<InterInst>> optCode;  // 优化后的中间代码
 
 public:
     Fun(bool ext, Tag t, std::string_view n, const std::vector<Var *> &paraList);
@@ -48,9 +50,9 @@ public:
     void locate(Var *var);  // 定位局部变了栈帧偏移
 
     // 中间代码
-    void addInst(InterInst *inst);          // 添加一条中间代码
-    void setReturnPoint(InterInst *inst);   // 设置函数返回点
-    InterInst *getReturnPoint();            // 获取函数返回点
+    void addInst(std::shared_ptr<InterInst> inst);          // 添加一条中间代码
+    void setReturnPoint(std::shared_ptr<InterInst> inst);   // 设置函数返回点
+    std::shared_ptr<InterInst> getReturnPoint();            // 获取函数返回点
     int getMaxDep() const;                  // 获取最大栈帧深度
     void setMaxDep(int dep);                // 设置最大栈帧深度
     void optimize(SymTab *tab);             // 执行优化操作

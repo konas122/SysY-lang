@@ -1,6 +1,7 @@
 #ifndef __COMPILER_SYMTAB_H__
 #define __COMPILER_SYMTAB_H__
 
+#include <memory>
 #include <unordered_map>
 
 #include "common.h"
@@ -62,7 +63,7 @@ public:
     std::vector<int> &getScopePath();
     Fun *getCurFun();               // 获取当前分析的函数
     void toString();                // 输出信息
-    void addInst(InterInst *inst);  // 添加一条中间代码
+    void addInst(std::shared_ptr<InterInst> inst);  // 添加一条中间代码
     void printInterCode();          // 输出中间指令
     void optimize();                // 执行优化操作
     void printOptCode();            // 输出中间指令

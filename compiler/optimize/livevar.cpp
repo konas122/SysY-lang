@@ -8,7 +8,7 @@
 
 using namespace std;
 
-LiveVar::LiveVar(DFG *g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(g)
+LiveVar::LiveVar(shared_ptr<DFG> g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(g)
 {
     varList = tab->getGlbVars();
     int glbNum = varList.size();
@@ -86,11 +86,11 @@ LiveVar::LiveVar(DFG *g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(
 }
 
 // 活跃变量传递函数: f(x)=(x - def(B)) | use(B)
-bool LiveVar::translate(Block *block) {
+bool LiveVar::translate(shared_ptr<Block> block) {
     Set tmp = block->liveInfo.out;
 
     for (auto i = block->insts.rbegin(); i != block->insts.rend(); ++i) {
-        InterInst *inst = *i;
+        auto inst = *i;
         if (inst->isDead) {
             continue;
         }

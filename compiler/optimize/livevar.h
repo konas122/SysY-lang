@@ -1,6 +1,8 @@
 #ifndef __OPTIMIZE_LIVEVAR_H__
 #define __OPTIMIZE_LIVEVAR_H__
 
+#include <memory>
+
 #include "optimize/set.h"
 
 
@@ -15,22 +17,22 @@ class InterInst;
 class LiveVar
 {
     SymTab *tab;    // 符号表
-    DFG *dfg;       // 数据流图指针
+    std::shared_ptr<DFG> dfg;       // 数据流图指针
 
     std::vector<Var *> varList;     // 变量列表
-    std::list<InterInst *> optCode; // 记录前面阶段优化后的代码
+    std::list<std::shared_ptr<InterInst>> optCode;  // 记录前面阶段优化后的代码
 
     Set U;  // 全集
     Set E;  // 空集
     Set G;  // 全局变量集
 
-    bool translate(Block* block);   // 活跃变量传递函数
+    bool translate(std::shared_ptr<Block> block);   // 活跃变量传递函数
 
 public:
     LiveVar(const LiveVar &rhs) = delete;
     LiveVar &operator=(const LiveVar &rhs) = delete;
 
-    LiveVar(DFG *g, SymTab *t, const std::vector<Var *> &paraVar);
+    LiveVar(std::shared_ptr<DFG> g, SymTab *t, const std::vector<Var *> &paraVar);
 
     void analyse(); // 活跃变量数据流分析
     void elimateDeadCode(int stop = false); // 死代码消除
