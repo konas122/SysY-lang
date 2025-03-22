@@ -6,6 +6,12 @@
 using namespace std;
 
 
+shared_ptr<Block> Block::create(const vector<shared_ptr<InterInst>> &codes) {
+    auto block = shared_ptr<Block>(new Block());
+    block->init(codes);
+    return block;
+}
+
 void Block::init(const vector<shared_ptr<InterInst>> &codes) {
     for (auto code : codes) {
         code->block = shared_from_this();
@@ -51,17 +57,13 @@ void DFG::createBlocks() {
         }
         if (!tmpList.empty()) {
             if (code->isFirst()) {
-                auto block = make_shared<Block>();
-                block->init(tmpList);
-                blocks.emplace_back(block);
+                blocks.emplace_back(Block::create(tmpList));
                 tmpList.clear();
             }
             tmpList.emplace_back(code);
         }
     }
-    auto block = make_shared<Block>();
-    block->init(tmpList);
-    blocks.emplace_back(block);
+    blocks.emplace_back(Block::create(tmpList));
 }
 
 void DFG::linkBlocks() {

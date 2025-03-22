@@ -30,10 +30,15 @@ public:
     CopyInfo copyInfo;  // 复写传播数据流信息
     LiveInfo liveInfo;  // 活跃变量数据流信息
 
+    void toString() const;
+
+    static std::shared_ptr<Block> create(const std::vector<std::shared_ptr<InterInst>> &codes);
+
+    Block &operator=(const Block &&) = delete;
+
+private:
     Block() = default;
     void init(const std::vector<std::shared_ptr<InterInst>> &codes);
-
-    void toString() const;
 };
 
 
