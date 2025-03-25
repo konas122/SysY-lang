@@ -1,4 +1,4 @@
-name: SysY-lang CI
+name: build
 
 on:
   push:
@@ -15,3 +15,5 @@ jobs:
     - uses: actions/checkout@v4
     - name: make
       run: make all
+    - name: test
+      run: ./cit test/test1.c
