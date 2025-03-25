@@ -1,4 +1,4 @@
-name: build
+name: build and run
 
 on:
   push:
@@ -17,3 +17,5 @@ jobs:
       run: make all
     - name: test
       run: ./cit test/test1.c
+    - name: run
+      run: ./a.out || echo $?
