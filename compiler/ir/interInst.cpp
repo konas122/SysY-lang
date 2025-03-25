@@ -497,8 +497,8 @@ void InterInst::storeVar(const string &reg32, const string &reg16, const Var *va
     if (!var) {
         return;
     }
-    const char *reg = var->isChar() ? reg32.c_str() : reg16.c_str();
-    const char **regName = var->isChar() ? Plat::reg32Name : Plat::reg16Name;
+    const char *reg = var->isChar() ? reg16.c_str() : reg32.c_str();
+    const char **regName = var->isChar() ? Plat::reg16Name : Plat::reg32Name;
 #ifdef REG_OPT
     int id = var->regId;
     if (id != -1) {
