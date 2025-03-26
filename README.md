@@ -1,6 +1,6 @@
 # SysY-lang
 
-[status build](https://github.com/konas122/SysY-lang/actions/workflows/build.yml/badge.svg?branch=main)
+![status build](https://github.com/konas122/SysY-lang/actions/workflows/build.yml/badge.svg?branch=main)
 
 SysY 语言编译器 (C subset)
 
