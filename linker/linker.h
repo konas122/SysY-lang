@@ -12,11 +12,11 @@ using Elf_file = LINK::Elf_file;
 // 一个数据块
 struct Block
 {
-    std::shared_ptr<char> data;
+    std::unique_ptr<char[]> data;
     uint32_t offset;
     uint32_t size;
 
-    Block(std::shared_ptr<char> d, uint32_t off, uint32_t s);
+    Block(std::unique_ptr<char[]>&& d, uint32_t off, uint32_t s);
     ~Block();
 };
 

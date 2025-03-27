@@ -11,8 +11,8 @@ using namespace LINK;
 extern bool showLink;
 
 
-Block::Block(shared_ptr<char> d, uint32_t off, uint32_t s)
-    : data(d), offset(off), size(s)
+Block::Block(unique_ptr<char[]>&& d, uint32_t off, uint32_t s)
+    : data(std::move(d)), offset(off), size(s)
 {}
 
 Block::~Block()
@@ -53,9 +53,10 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
         auto seg = owner->shdrTab[name];
 
         if (name != ".bss") {
-            auto buf = make_shared<char>(seg->sh_size);
-            owner->getData(buf, seg->sh_offset, seg->sh_size);
-            blocks.emplace_back(make_shared<Block>(buf, size, seg->sh_size));
+            auto buf = make_unique<char[]>(seg->sh_size);
+            owner->getData(buf.get(), seg->sh_offset, seg->sh_size);
+            auto block = make_shared<Block>(std::move(buf), size, seg->sh_size);
+            blocks.emplace_back(block);
         }
         seg->sh_addr = base + size;
         size += seg->sh_size;

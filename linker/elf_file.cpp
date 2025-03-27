@@ -19,11 +19,11 @@ RelItem::~RelItem()
 
 // =============================================================================
 
-void Elf_file::getData(shared_ptr<char> buf, Elf32_Off offset, Elf32_Word size) {
+void Elf_file::getData(char *buf, Elf32_Off offset, Elf32_Word size) {
     FILE *fp = fopen(elf_dir.c_str(), "rb");
     rewind(fp);
     fseek(fp, offset, 0);
-    fread(buf.get(), size, 1, fp);
+    fread(buf, size, 1, fp);
     fclose(fp);
 }
 

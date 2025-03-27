@@ -15,7 +15,23 @@ jobs:
     - uses: actions/checkout@v4
     - name: make
       run: make all
-    - name: test
+
+    - name: test_1
       run: ./cit test/test1.c
-    - name: run
+    - name: run_1
+      run: ./a.out || echo $?
+
+    - name: test_2
+      run: ./cit test/test1.c -opt
+    - name: run_2
+      run: ./a.out || echo $?
+
+    - name: test_3
+      run: ./cit test/test2.c
+    - name: run_3
+      run: ./a.out || echo $?
+
+    - name: test_4
+      run: ./cit test/test2.c -opt
+    - name: run_4
       run: ./a.out || echo $?

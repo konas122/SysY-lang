@@ -51,7 +51,7 @@ public:
 public:
     Elf_file() = default;
     void readElf(const char *dir);                              // 读入 elf
-    void getData(std::shared_ptr<char> buf, Elf32_Off offset, Elf32_Word size); // 读取数据
+    void getData(char *buf, Elf32_Off offset, Elf32_Word size); // 读取数据
     int getSegIndex(std::string_view segName);                  // 获取指定段名在段表下标
     int getSymIndex(std::string_view symName);                  // 获取指定符号名在符号表下标
     void addPhdr(Elf32_Word type, Elf32_Off off,                // 添加程序头表项
