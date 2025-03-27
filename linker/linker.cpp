@@ -11,22 +11,18 @@ using namespace LINK;
 extern bool showLink;
 
 
-Block::Block(char *d, uint32_t off, uint32_t s)
+Block::Block(shared_ptr<char> d, uint32_t off, uint32_t s)
     : data(d), offset(off), size(s)
 {}
 
-Block::~Block() {
-    delete[] data;
-}
+Block::~Block()
+{}
 
 
 // =============================================================================
 
 SegList::~SegList() {
     ownerList.clear();
-    for (auto block : blocks) {
-        delete block;
-    }
     blocks.clear();
 }
 
@@ -54,12 +50,12 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
 
     for (auto & owner : ownerList) {
         size += (DISC_ALIGN - size % DISC_ALIGN) % DISC_ALIGN;
-        Elf32_Shdr *seg = owner->shdrTab[name];
+        auto seg = owner->shdrTab[name];
 
         if (name != ".bss") {
-            char *buf = new char[seg->sh_size];
+            auto buf = make_shared<char>(seg->sh_size);
             owner->getData(buf, seg->sh_offset, seg->sh_size);
-            blocks.emplace_back(new Block(buf, size, seg->sh_size));
+            blocks.emplace_back(make_shared<Block>(buf, size, seg->sh_size));
         }
         seg->sh_addr = base + size;
         size += seg->sh_size;
@@ -78,7 +74,7 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
 void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     uint32_t relOffset = relAddr - baseAddr;    // 同类合并段的数据偏移
     // 查找修正地址所在位置
-    Block *b = nullptr;
+    shared_ptr<Block> b = nullptr;
     for (auto block : blocks) {
         if (block->offset <= relOffset && block->offset + block->size > relOffset) {
             b = block;
@@ -87,7 +83,7 @@ void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     }
     assert(b != nullptr && "pointer b == nullptr");
     // 处理字节为 b->data[relOffset-b->offset]
-    int *pAddr = reinterpret_cast<int *>(b->data + relOffset - b->offset);
+    int *pAddr = reinterpret_cast<int *>(b->data.get() + relOffset - b->offset);
     if (type == R_386_32) { // 绝对地址修正
         if (showLink) {
             printf("绝对地址修正: 原地址=%08x\t", *pAddr);
@@ -116,12 +112,12 @@ Linker::Linker() {
     segNames.emplace_back(".data");
     segNames.emplace_back(".bss");
     for (const auto &segName : segNames) {
-        segLists[segName] = new SegList();
+        segLists[segName] = make_shared<SegList>();
     }
 }
 
 void Linker::addElf(const char *dir) {
-    Elf_file *elf = new Elf_file();
+    shared_ptr<Elf_file> elf = make_shared<Elf_file>();
     elf->readElf(dir);
     elfs.emplace_back(elf);
 }
@@ -135,7 +131,7 @@ void Linker::collectInfo() {
         }
 
         for (const auto &pair : elf->symTab) {
-            SymLink *symLink = new SymLink();
+            auto symLink = make_shared<SymLink>();
             symLink->name = pair.first;
 
             if (pair.second->st_shndx == STN_UNDEF) {
@@ -231,7 +227,7 @@ void Linker::symParser() {
     }
 
     for (size_t i = 0; i < symDef.size(); ++i) {
-        Elf32_Sym *sym = symDef[i]->prov->symTab[symDef[i]->name];  // 定义的符号信息
+        auto sym = symDef[i]->prov->symTab[symDef[i]->name];        // 定义的符号信息
         string segName = symDef[i]->prov->shdrNames[sym->st_shndx]; // 段名
         sym->st_value = sym->st_value +                             // 偏移
                         symDef[i]->prov->shdrTab[segName]->sh_addr; // 段基址
@@ -244,9 +240,9 @@ void Linker::symParser() {
         printf("----------未定义符号解析----------\n");
     }
     for (auto symLink : symLinks) {
-        const Elf32_Sym *provsym = symLink->prov->symTab[symLink->name];    // 被引用的符号信息
-        Elf32_Sym *recvsym = symLink->recv->symTab[symLink->name];          // 被引用的符号信息
-        recvsym->st_value = provsym->st_value;                              // 被引用符号已经解析了
+        const auto provsym = symLink->prov->symTab[symLink->name];  // 被引用的符号信息
+        auto recvsym = symLink->recv->symTab[symLink->name];        // 被引用的符号信息
+        recvsym->st_value = provsym->st_value;                      // 被引用符号已经解析了
         if (showLink) {
             printf("%s\t%08x\t%s\n", symLink->name.c_str(), recvsym->st_value, symLink->recv->elf_dir.c_str());
         }
@@ -258,9 +254,9 @@ void Linker::relocate() {
     if (showLink) {
         printf("--------------重定位----------------\n");
     }
-    for (const auto elf : elfs) {
+    for (const auto &elf : elfs) {
         for (auto rel : elf->relTab) {  // 遍历重定位项
-            const Elf32_Sym *sym = elf->symTab[rel->relName];                               // 重定位符号信息
+            const auto sym = elf->symTab[rel->relName];                                     // 重定位符号信息
             uint32_t symAddr = sym->st_value;                                               // 解析后的符号段偏移为虚拟地址
             uint32_t relAddr = elf->shdrTab[rel->segName]->sh_addr + rel->rel->r_offset;    // 重定位地址
             // 重定位操作
@@ -328,8 +324,9 @@ void Linker::assemExe() {
     exe.ehdr.e_phnum = segNames.size();
 
     // 填充 shstrtab 数据
-    char *str = exe.shstrtab = new char[shstrtabSize];
+    exe.shstrtab = make_unique<char[]>(shstrtabSize);
     exe.shstrtabSize = shstrtabSize;
+    char *str = exe.shstrtab.get();
     int index = 0;
     // 段表串名与索引映射
     unordered_map<string, int> shstrIndex;
@@ -364,10 +361,10 @@ void Linker::assemExe() {
     exe.shdrTab[".symtab"]->sh_link = exe.getSegIndex(".symtab") + 1; // .strtab 默认在 .symtab 之后
     int strtabSize = 0;         // 字符串表大小
     exe.addSym("", nullptr);    // 空符号表项
-    for (const auto symlink : symDef) {
+    for (const auto &symlink : symDef) {
         string name = symlink->name;
         strtabSize += name.length() + 1;
-        Elf32_Sym *sym = symlink->prov->symTab[name];
+        auto sym = symlink->prov->symTab[name];
         sym->st_shndx = exe.getSegIndex(symlink->prov->shdrNames[sym->st_shndx]);   // 重定位后可以修改了
         exe.addSym(name, sym);
     }
@@ -377,13 +374,14 @@ void Linker::assemExe() {
     curOff += (1 + symDef.size()) * 16;             // .strtab 偏移
     exe.addShdr(".strtab", SHT_STRTAB, 0, 0, curOff, strtabSize, SHN_UNDEF, 0, 1, 0);
     // 填充 strtab 数据
-    str = exe.strtab = new char[strtabSize];
+    exe.strtab = make_unique<char[]>(strtabSize);
     exe.strtabSize = strtabSize;
+    str = exe.strtab.get();
     index = 0;
     // 串表与索引映射
     unordered_map<string, int> strIndex;
     strIndex[""] = strtabSize - 1;
-    for (const auto sym : symDef) {
+    for (const auto &sym : symDef) {
         strIndex[sym->name] = index;
         int len = sym->name.length() + 1;
         strncpy(str + index, sym->name.c_str(), len);
@@ -405,16 +403,16 @@ void Linker::exportElf(const char *dir) {
     FILE *fp = fopen(dir, "a+");
     const char pad[1] = {0};
     for (const auto &segName : segNames) {
-        const SegList *sl = segLists[segName];
+        const auto sl = segLists[segName];
         int padnum = sl->offset - sl->begin;
         while (padnum--) {
             fwrite(pad, 1, 1, fp);
         }
 
         if (segName != ".bss") {
-            const Block *old = nullptr;
+            shared_ptr<Block> old = nullptr;
             const char instPad[1] = {(char)0x90};
-            for (const auto block : sl->blocks) {
+            for (auto block : sl->blocks) {
                 if (old != nullptr) {
                     padnum = block->offset - (old->offset + old->size);
                     while (padnum--) {
@@ -422,7 +420,7 @@ void Linker::exportElf(const char *dir) {
                     }
                 }
                 old = block;
-                fwrite(block->data, block->size, 1, fp);
+                fwrite(block->data.get(), block->size, 1, fp);
             }
         }
     }
@@ -445,26 +443,14 @@ bool Linker::link(const char *dir) {
 
 Linker::~Linker() {
     // 清空合并段序列
-    for (auto i = segLists.cbegin(); i != segLists.cend(); ++i) {
-        delete i->second;
-    }
     segLists.clear();
 
     // 清空符号引用序列
-    for (auto i = symLinks.cbegin(); i != symLinks.cend(); ++i) {
-        delete *i;
-    }
     symLinks.clear();
 
     // 清空符号定义序列
-    for (auto i = symDef.cbegin(); i != symDef.cend(); ++i) {
-        delete *i;
-    }
     symDef.clear();
 
     // 清空目标文件
-    for(const auto elf : elfs) {
-        delete elf;
-    }
     elfs.clear();
 }

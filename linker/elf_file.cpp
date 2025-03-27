@@ -9,22 +9,21 @@ using namespace LINK;
 extern bool showLink;
 
 
-RelItem::RelItem(std::string_view sname, Elf32_Rel *r, std::string_view rname)
+RelItem::RelItem(std::string_view sname, std::shared_ptr<Elf32_Rel> r, std::string_view rname)
     : segName(sname), relName(rname), rel(r)
 {}
 
-RelItem::~RelItem() {
-    delete rel;
-}
+RelItem::~RelItem()
+{}
 
 
 // =============================================================================
 
-void Elf_file::getData(char *buf, Elf32_Off offset, Elf32_Word size) {
+void Elf_file::getData(shared_ptr<char> buf, Elf32_Off offset, Elf32_Word size) {
     FILE *fp = fopen(elf_dir.c_str(), "rb");
     rewind(fp);
     fseek(fp, offset, 0);
-    fread(buf, size, 1, fp);
+    fread(buf.get(), size, 1, fp);
     fclose(fp);
 }
 
@@ -37,8 +36,8 @@ void Elf_file::readElf(const char *dir) {
     if (ehdr.e_type == ET_EXEC) {   // 可执行文件拥有程序头表
         fseek(fp, ehdr.e_phoff, 0); // 程序头表位置
         for (int i = 0; i < ehdr.e_phnum; ++i) {
-            Elf32_Phdr *phdr = new Elf32_Phdr();
-            fread(phdr, ehdr.e_phentsize, 1, fp);
+            auto phdr = make_shared<Elf32_Phdr>();
+            fread(phdr.get(), ehdr.e_phentsize, 1, fp);
             phdrTab.emplace_back(phdr);
         }
     }
@@ -47,41 +46,40 @@ void Elf_file::readElf(const char *dir) {
     Elf32_Shdr shstrTab;
     fread(&shstrTab, ehdr.e_shentsize, 1, fp);                          // 读取段表字符串表项
 
-    char *shstrTabData = new char[shstrTab.sh_size];
+    auto shstrTabData = make_unique<char[]>(shstrTab.sh_size);
     fseek(fp, shstrTab.sh_offset, 0);               // 转移到段表字符串表内容
-    fread(shstrTabData, shstrTab.sh_size, 1, fp);   // 读取段表字符串表
+    fread(shstrTabData.get(), shstrTab.sh_size, 1, fp);   // 读取段表字符串表
 
     fseek(fp, ehdr.e_shoff, 0);                 // 段表位置
     for (int i = 0; i < ehdr.e_shnum; ++i) {    // 读取段表
-        Elf32_Shdr *shdr = new Elf32_Shdr();
-        fread(shdr, ehdr.e_shentsize, 1, fp);   // 读取段表项
-        string name(shstrTabData + shdr->sh_name);
-        shdrNames.emplace_back(name);           // 记录段表名位置
+        auto shdr = make_shared<Elf32_Shdr>();
+        fread(shdr.get(), ehdr.e_shentsize, 1, fp); // 读取段表项
+        string name(shstrTabData.get() + shdr->sh_name);
+        shdrNames.emplace_back(name);               // 记录段表名位置
         if (name.empty()) {
-            delete shdr;                        // 删除空段表项
+            // 删除空段表项
         }
         else {
             shdrTab[name] = shdr;
         }
     }
-    delete[] shstrTabData;
 
-    Elf32_Shdr *strTab = shdrTab[".strtab"];    // 字符串表信息
-    char *strTabData = new char[strTab->sh_size];
-    fseek(fp, strTab->sh_offset, 0);            // 转移到字符串表内容
-    fread(strTabData, strTab->sh_size, 1, fp);  // 读取字符串表
+    auto strTab = shdrTab[".strtab"];    // 字符串表信息
+    auto strTabData = make_unique<char[]>(strTab->sh_size);
+    fseek(fp, strTab->sh_offset, 0);                    // 转移到字符串表内容
+    fread(strTabData.get(), strTab->sh_size, 1, fp);    // 读取字符串表
 
-    const Elf32_Shdr *sh_symTab = shdrTab[".symtab"];   // 符号表信息
+    const auto sh_symTab = shdrTab[".symtab"];   // 符号表信息
     fseek(fp, sh_symTab->sh_offset, 0);                 // 转移到符号表内容
     int symNum = sh_symTab->sh_size / 16;
-    vector<Elf32_Sym *> symList;
+    vector<shared_ptr<Elf32_Sym>> symList;
     for (int i = 0; i < symNum; ++i) {
-        Elf32_Sym *sym = new Elf32_Sym();
-        fread(sym, 16, 1, fp);                          // 读取符号项
-        symList.emplace_back(sym);                      // 添加到符号序列
-        string name(strTabData + sym->st_name);
+        auto sym = make_shared<Elf32_Sym>();
+        fread(sym.get(), 16, 1, fp);            // 读取符号项
+        symList.emplace_back(sym);              // 添加到符号序列
+        string name(strTabData.get() + sym->st_name);
         if (name.empty()) {
-            delete sym;
+
         }
         else {
             symTab[name] = sym;
@@ -93,15 +91,15 @@ void Elf_file::readElf(const char *dir) {
     }
 
     for (auto &pair : shdrTab) {
-        if (pair.first.find(".rel") == 0) {                     // 是重定位段
-            const Elf32_Shdr *sh_relTab = shdrTab[pair.first];  // 重定位表信息
-            fseek(fp, sh_relTab->sh_offset, 0);                 // 转移到重定位表内容
+        if (pair.first.find(".rel") == 0) {             // 是重定位段
+            const auto sh_relTab = shdrTab[pair.first]; // 重定位表信息
+            fseek(fp, sh_relTab->sh_offset, 0);         // 转移到重定位表内容
             int relNum = sh_relTab->sh_size / 8;
             for (int i = 0; i < relNum; ++i) {
-                Elf32_Rel *rel = new Elf32_Rel();
-                fread(rel, 8, 1, fp);
-                string name(strTabData + symList[ELF32_R_SYM(rel->r_info)]->st_name);
-                RelItem *r = new RelItem(pair.first.substr(4), rel, name);
+                auto rel = make_shared<Elf32_Rel>();
+                fread(rel.get(), 8, 1, fp);
+                string name(strTabData.get() + symList[ELF32_R_SYM(rel->r_info)]->st_name);
+                auto r = make_shared<RelItem>(pair.first.substr(4), rel, name);
                 relTab.emplace_back(r);
                 if (showLink) {
                     cout << r->segName << "\t" << r->relName << "\t" << rel->r_offset << endl;
@@ -110,7 +108,6 @@ void Elf_file::readElf(const char *dir) {
         }
     }
 
-    delete[] strTabData;
     fclose(fp);
 }
 
@@ -140,7 +137,7 @@ void Elf_file::addPhdr(Elf32_Word type, Elf32_Off off,
                        Elf32_Addr vaddr, Elf32_Word filesz,
                        Elf32_Word memsz, Elf32_Word flags, Elf32_Word align)
 {
-    Elf32_Phdr *ph = new Elf32_Phdr();
+    auto ph = make_shared<Elf32_Phdr>();
     ph->p_type = type;
     ph->p_offset = off;
     ph->p_vaddr = ph->p_paddr = vaddr;
@@ -156,7 +153,7 @@ void Elf_file::addShdr(const string &sh_name, Elf32_Word sh_type, Elf32_Word sh_
                        Elf32_Word sh_link, Elf32_Word sh_info, Elf32_Word sh_addralign,
                        Elf32_Word sh_entsize)
 {
-    Elf32_Shdr *sh = new Elf32_Shdr();
+    auto sh = make_shared<Elf32_Shdr>();
     sh->sh_name = 0;
     sh->sh_type = sh_type;
     sh->sh_flags = sh_flags;
@@ -171,8 +168,8 @@ void Elf_file::addShdr(const string &sh_name, Elf32_Word sh_type, Elf32_Word sh_
     shdrNames.emplace_back(sh_name);
 }
 
-void Elf_file::addSym(const string &st_name, const Elf32_Sym *s) {
-    Elf32_Sym *sym = symTab[st_name] = new Elf32_Sym();
+void Elf_file::addSym(const string &st_name, const shared_ptr<Elf32_Sym> s) {
+    auto sym = symTab[st_name] = make_shared<Elf32_Sym>();
     if (st_name == "") {
         sym->st_name = 0;
         sym->st_value = 0;
@@ -203,59 +200,39 @@ void Elf_file::writeElf(const char*dir, int flag) {
         fwrite(&ehdr, ehdr.e_ehsize, 1, fp);    // elf 文件头
         if(!phdrTab.empty()) {                  // 程序头表
             for (size_t i = 0; i < phdrTab.size(); ++i) {
-                fwrite(phdrTab[i], ehdr.e_phentsize, 1, fp);
+                fwrite(phdrTab[i].get(), ehdr.e_phentsize, 1, fp);
             }
         }
         fclose(fp);
     }
     else if (flag == 2) {
         FILE *fp = fopen(dir, "a+");
-        fwrite(shstrtab, shstrtabSize, 1, fp);          // .shstrtab
+        fwrite(shstrtab.get(), shstrtabSize, 1, fp);    // .shstrtab
         for (size_t i = 0; i < shdrNames.size(); ++i) { // 段表
-            const Elf32_Shdr *sh = shdrTab[shdrNames[i]];
-            fwrite(sh, ehdr.e_shentsize, 1, fp);
+            const auto sh = shdrTab[shdrNames[i]];
+            fwrite(sh.get(), ehdr.e_shentsize, 1, fp);
         }
         for (size_t i = 0; i < symNames.size(); ++i) {  // 符号表
-            Elf32_Sym *sym = symTab[symNames[i]];
-            fwrite(sym, sizeof(Elf32_Sym), 1, fp);
+            auto sym = symTab[symNames[i]];
+            fwrite(sym.get(), sizeof(Elf32_Sym), 1, fp);
         }
 
-        fwrite(strtab, strtabSize, 1, fp);  // .strtab
+        fwrite(strtab.get(), strtabSize, 1, fp);        // .strtab
         fclose(fp);
     }
 }
 
 Elf_file::~Elf_file() {
     // 清空程序头表
-    for (auto i = phdrTab.cbegin(); i != phdrTab.cend(); ++i) {
-        delete *i;
-    }
     phdrTab.clear();
 
     // 清空段表
-    for (auto i = shdrTab.cbegin(); i != shdrTab.cend(); ++i) {
-        delete i->second;
-    }
     shdrTab.clear();
     shdrNames.clear();
 
     // 清空符号表
-    for (auto i = symTab.cbegin(); i != symTab.cend(); ++i) {
-        delete i->second;
-    }
     symTab.clear();
 
     // 清空重定位表
-    for (auto i = relTab.cbegin(); i != relTab.cend(); ++i) {
-        delete *i;
-    }
     relTab.clear();
-
-    // 清空临时存储数据
-    if (shstrtab != nullptr) {
-        delete[] shstrtab;
-    }
-    if (strtab != nullptr) {
-        delete[] strtab;
-    }
 }
