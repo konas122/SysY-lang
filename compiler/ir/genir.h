@@ -68,24 +68,24 @@ public:
     Var *genOneOpRight(Var *val, Tag opt);
 
     // 产生复合语句
-    void genWhileHead(std::shared_ptr<InterInst>&_while, std::shared_ptr<InterInst>&_exit);
-    void genWhileCond(Var *cond, std::shared_ptr<InterInst>_exit);
-    void genWhileTail(std::shared_ptr<InterInst>&_while, std::shared_ptr<InterInst>&_exit);
-    void genDoWhileHead(std::shared_ptr<InterInst>&_do, std::shared_ptr<InterInst>&_exit);
-    void genDoWhileTail(Var *cond, std::shared_ptr<InterInst>_do, std::shared_ptr<InterInst>_exit);
-    void genForHead(std::shared_ptr<InterInst>&_for, std::shared_ptr<InterInst>&_exit);
-    void genForCondBegin(Var *cond, std::shared_ptr<InterInst>&_step, std::shared_ptr<InterInst>&_block, std::shared_ptr<InterInst>_exit);
-    void genForCondEnd(std::shared_ptr<InterInst>_for, std::shared_ptr<InterInst>_block);
-    void genForTail(std::shared_ptr<InterInst>&_step, std::shared_ptr<InterInst>&_exit);
+    void genWhileHead(std::shared_ptr<InterInst>& _while, std::shared_ptr<InterInst>& _exit);
+    void genWhileCond(Var *cond, std::shared_ptr<InterInst> _exit);
+    void genWhileTail(std::shared_ptr<InterInst>& _while, const std::shared_ptr<InterInst>& _exit);
+    void genDoWhileHead(std::shared_ptr<InterInst>& _do, std::shared_ptr<InterInst>& _exit);
+    void genDoWhileTail(Var *cond, std::shared_ptr<InterInst> _do, std::shared_ptr<InterInst> _exit);
+    void genForHead(std::shared_ptr<InterInst>& _for, std::shared_ptr<InterInst>& _exit);
+    void genForCondBegin(Var *cond, std::shared_ptr<InterInst>& _step, std::shared_ptr<InterInst>& _block, std::shared_ptr<InterInst> _exit);
+    void genForCondEnd(std::shared_ptr<InterInst> _for, std::shared_ptr<InterInst> _block);
+    void genForTail(std::shared_ptr<InterInst>& _step, const std::shared_ptr<InterInst>& _exit);
 
-    void genIfHead(Var *cond, std::shared_ptr<InterInst>&_else);
-    void genIfTail(std::shared_ptr<InterInst>&_else);
-    void genElseHead(std::shared_ptr<InterInst>_else, std::shared_ptr<InterInst>&_exit);
-    void genElseTail(std::shared_ptr<InterInst>&_exit);
-    void genSwitchHead(std::shared_ptr<InterInst>&_exit);
-    void genSwitchTail(std::shared_ptr<InterInst>_exit);
-    void genCaseHead(Var *cond, Var *lb, std::shared_ptr<InterInst>&_case_exit);
-    void genCaseTail(std::shared_ptr<InterInst>_case_exit);
+    void genIfHead(Var *cond, std::shared_ptr<InterInst>& _else);
+    void genIfTail(const std::shared_ptr<InterInst>& _else);
+    void genElseHead(std::shared_ptr<InterInst> _else, std::shared_ptr<InterInst>& _exit);
+    void genElseTail(std::shared_ptr<InterInst>& _exit);
+    void genSwitchHead(std::shared_ptr<InterInst>& _exit);
+    void genSwitchTail(std::shared_ptr<InterInst> _exit);
+    void genCaseHead(Var *cond, Var *lb, std::shared_ptr<InterInst>& _case_exit);
+    void genCaseTail(std::shared_ptr<InterInst> _case_exit);
 
     // 产生特殊语句
     void genBreak();

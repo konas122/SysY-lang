@@ -479,8 +479,8 @@ bool GenIR::typeCheck(const Var *lval, const Var *rval) {
     return flag;
 }
 
-void GenIR::genWhileHead(shared_ptr<InterInst>&_while, shared_ptr<InterInst>&_exit) {
-    // InterInst* _blank=make_shared<InterInst>();
+void GenIR::genWhileHead(shared_ptr<InterInst>& _while, shared_ptr<InterInst>& _exit) {
+    // auto _blank = make_shared<InterInst>();
     // symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _blank));
 
     _while = make_shared<InterInst>();
@@ -492,7 +492,7 @@ void GenIR::genWhileHead(shared_ptr<InterInst>&_while, shared_ptr<InterInst>&_ex
     push(_while, _exit);
 }
 
-void GenIR::genWhileCond(Var *cond, shared_ptr<InterInst>_exit) {
+void GenIR::genWhileCond(Var *cond, shared_ptr<InterInst> _exit) {
     if (cond) {
         if (cond->isVoid()) {
             cond = Var::getTrue();
@@ -504,20 +504,20 @@ void GenIR::genWhileCond(Var *cond, shared_ptr<InterInst>_exit) {
     }
 }
 
-void GenIR::genWhileTail(shared_ptr<InterInst>&_while, shared_ptr<InterInst>&_exit) {
+void GenIR::genWhileTail(shared_ptr<InterInst>& _while, const shared_ptr<InterInst>& _exit) {
     symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _while));
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genDoWhileHead(shared_ptr<InterInst>&_do, shared_ptr<InterInst>&_exit) {
+void GenIR::genDoWhileHead(shared_ptr<InterInst>& _do, shared_ptr<InterInst>& _exit) {
     _do = make_shared<InterInst>();
     _exit = make_shared<InterInst>();
     symtab.addInst(_do);
     push(_do, _exit);
 }
 
-void GenIR::genDoWhileTail(Var *cond, shared_ptr<InterInst>_do, shared_ptr<InterInst>_exit) {
+void GenIR::genDoWhileTail(Var *cond, shared_ptr<InterInst> _do, shared_ptr<InterInst> _exit) {
     if (cond) {
         if (cond->isVoid()) {
             cond = Var::getTrue();
@@ -531,13 +531,13 @@ void GenIR::genDoWhileTail(Var *cond, shared_ptr<InterInst>_do, shared_ptr<Inter
     pop();
 }
 
-void GenIR::genForHead(shared_ptr<InterInst>&_for, shared_ptr<InterInst>&_exit) {
+void GenIR::genForHead(shared_ptr<InterInst>& _for, shared_ptr<InterInst>& _exit) {
     _for = make_shared<InterInst>();
     _exit = make_shared<InterInst>();
     symtab.addInst(_for);
 }
 
-void GenIR::genForCondBegin(Var *cond, shared_ptr<InterInst>&_step, shared_ptr<InterInst>&_block, shared_ptr<InterInst>_exit) {
+void GenIR::genForCondBegin(Var *cond, shared_ptr<InterInst>& _step, shared_ptr<InterInst>& _block, shared_ptr<InterInst> _exit) {
     _block = make_shared<InterInst>();
     _step = make_shared<InterInst>();
     if (cond) {
@@ -554,18 +554,18 @@ void GenIR::genForCondBegin(Var *cond, shared_ptr<InterInst>&_step, shared_ptr<I
     push(_step, _exit);
 }
 
-void GenIR::genForCondEnd(shared_ptr<InterInst>_for, shared_ptr<InterInst>_block) {
+void GenIR::genForCondEnd(shared_ptr<InterInst> _for, shared_ptr<InterInst> _block) {
     symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _for));
     symtab.addInst(_block);
 }
 
-void GenIR::genForTail(shared_ptr<InterInst>&_step, shared_ptr<InterInst>&_exit) {
+void GenIR::genForTail(shared_ptr<InterInst>& _step, const shared_ptr<InterInst>& _exit) {
     symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _step));
     symtab.addInst(_exit);
     pop();
 }
 
-void GenIR::genIfHead(Var *cond, shared_ptr<InterInst>&_else) {
+void GenIR::genIfHead(Var *cond, shared_ptr<InterInst>& _else) {
     _else = make_shared<InterInst>();
     if (cond) {
         if (cond->isRef()) {
@@ -575,26 +575,26 @@ void GenIR::genIfHead(Var *cond, shared_ptr<InterInst>&_else) {
     }
 }
 
-void GenIR::genIfTail(shared_ptr<InterInst>&_else) {
+void GenIR::genIfTail(const shared_ptr<InterInst>& _else) {
     symtab.addInst(_else);
 }
 
-void GenIR::genElseHead(shared_ptr<InterInst>_else, shared_ptr<InterInst>&_exit) {
+void GenIR::genElseHead(shared_ptr<InterInst> _else, shared_ptr<InterInst>& _exit) {
     _exit = make_shared<InterInst>();
     symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _exit));
     symtab.addInst(_else);
 }
 
-void GenIR::genElseTail(shared_ptr<InterInst>&_exit) {
+void GenIR::genElseTail(shared_ptr<InterInst>& _exit) {
     symtab.addInst(_exit);
 }
 
-void GenIR::genSwitchHead(shared_ptr<InterInst>&_exit) {
+void GenIR::genSwitchHead(shared_ptr<InterInst>& _exit) {
     _exit = make_shared<InterInst>();
     push(nullptr, _exit);
 }
 
-void GenIR::genSwitchTail(shared_ptr<InterInst>_exit) {
+void GenIR::genSwitchTail(shared_ptr<InterInst> _exit) {
     symtab.addInst(_exit);
     pop();
 }
@@ -606,9 +606,9 @@ void GenIR::genCaseHead(Var *cond, Var *lb, shared_ptr<InterInst>& _case_exit) {
     }
 }
 
-void GenIR::genCaseTail(shared_ptr<InterInst>_case_exit) {
+void GenIR::genCaseTail(shared_ptr<InterInst> _case_exit) {
     symtab.addInst(_case_exit);
-    // shared_ptr<InterInst>_case_exit_append = make_shared<InterInst>();
+    // shared_ptr<InterInst> _case_exit_append = make_shared<InterInst>();
     // symtab.addInst(make_shared<InterInst>(Operator::OP_JMP, _case_exit_append));
     // symtab.addInst(_case_exit);
     // symtab.addInst(_case_exit_append);
@@ -666,8 +666,7 @@ void GenIR::genReturn(Var *ret) {
     }
 }
 
-bool GenIR::genVarInit(Var *var)
-{
+bool GenIR::genVarInit(Var *var) {
     if (var->getName()[0] == '<') {
         return 0;
     }
