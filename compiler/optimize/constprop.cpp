@@ -11,7 +11,7 @@
 using namespace std;
 
 
-ConstPropagation::ConstPropagation(shared_ptr<DFG> g, SymTab *t, vector<Var *>& paraVar)
+ConstPropagation::ConstPropagation(shared_ptr<DFG> g, shared_ptr<SymTab> t, const vector<shared_ptr<Var>>& paraVar)
     : tab(t), dfg(g)
 {
     glbVars = tab->getGlbVars();
@@ -34,7 +34,7 @@ ConstPropagation::ConstPropagation(shared_ptr<DFG> g, SymTab *t, vector<Var *>& 
 
     // 参数变量, 初始值应该是 NAC
     for (size_t i = 0; i < paraVar.size(); ++i) {
-        Var *var = paraVar[i];
+        shared_ptr<Var> var = paraVar[i];
         var->index = index++;
         vars.emplace_back(var);
         boundVals.emplace_back(NAC);
@@ -43,7 +43,7 @@ ConstPropagation::ConstPropagation(shared_ptr<DFG> g, SymTab *t, vector<Var *>& 
     for (auto inst : dfg->codeList) {
         // 局部变量 DEC 声明
         if (inst->isDec()) {
-            Var *var = inst->getArg1();
+            shared_ptr<Var> var = inst->getArg1();
             var->index = index++;
             vars.emplace_back(var);
 
@@ -112,9 +112,9 @@ void ConstPropagation::translate(shared_ptr<InterInst> inst, const vector<double
     out = in;
     Operator op = inst->getOp();
 
-    const Var *arg1 = inst->getArg1();
-    const Var *arg2 = inst->getArg2();
-    const Var *result = inst->getResult();
+    const shared_ptr<Var> arg1 = inst->getArg1();
+    const shared_ptr<Var> arg2 = inst->getArg2();
+    const shared_ptr<Var> result = inst->getResult();
 
     if (inst->isExpr()) {
         double tmp = NAC;   // 保守预测
@@ -237,12 +237,12 @@ void ConstPropagation::translate(shared_ptr<InterInst> inst, const vector<double
         }
     }
     else if (op == Operator::OP_PROC) { // 破坏运算 call f()
-        for (const auto var : glbVars) {
+        for (const auto &var : glbVars) {
             out[var->index] = NAC;      // 全局变量全部置为 NAC
         }
     }
     else if (op == Operator::OP_CALL) { // 破坏运算 call f()
-        for (const auto var : glbVars) {
+        for (const auto &var : glbVars) {
             out[var->index] = NAC;      // 全局变量全部置为 NAC
         }
         out[result->index] = NAC;       // 函数返回值失去常量性质 (保守预测)
@@ -313,13 +313,13 @@ void ConstPropagation::algebraSimplify() {
             Operator op = inst->getOp();
             if (inst->isExpr()) {
                 double rs;
-                Var *result = inst->getResult();
-                Var *arg1 = inst->getArg1();
-                Var *arg2 = inst->getArg2();
+                shared_ptr<Var> result = inst->getResult();
+                shared_ptr<Var> arg1 = inst->getArg1();
+                shared_ptr<Var> arg2 = inst->getArg2();
 
                 rs = inst->outVals[result->index];
                 if (rs != UNDEF && rs != NAC) {
-                    Var *newVar = new Var(cast_int(rs));
+                    shared_ptr<Var> newVar = make_shared<Var>(cast_int(rs));
                     tab->addVar(newVar);
                     inst->replace(Operator::OP_AS, result, newVar);
                 }
@@ -359,8 +359,8 @@ void ConstPropagation::algebraSimplify() {
                         continue;
                     }
 
-                    Var *newArg1 = nullptr;
-                    Var *newArg2 = nullptr;
+                    shared_ptr<Var> newArg1;
+                    shared_ptr<Var> newArg2;
                     Operator newOp = Operator::OP_AS;
 
                     if (op == Operator::OP_ADD) {
@@ -382,7 +382,7 @@ void ConstPropagation::algebraSimplify() {
                     }
                     else if (op == Operator::OP_MUL) {
                         if ((dol && left == 0) || (dor && right == 0)) {
-                            newArg1 = new Var(0);
+                            newArg1 = make_shared<Var>(0);
                         }
                         if (dol && left == 1) {
                             newArg1 = arg2;
@@ -440,12 +440,12 @@ void ConstPropagation::algebraSimplify() {
                     }
                     else {          // 没法化简, 正常传播
                         if (dol) {  // 传播左操作数
-                            newArg1 = new Var(left);
+                            newArg1 = make_shared<Var>(left);
                             tab->addVar(newArg1);
                             newArg2 = arg2;
                         }
                         else if (dor) { // 传播右操作数
-                            newArg2 = new Var(right);
+                            newArg2 = make_shared<Var>(right);
                             tab->addVar(newArg2);
                             newArg1 = arg1;
                         }
@@ -454,12 +454,12 @@ void ConstPropagation::algebraSimplify() {
                 }
             }
             else if (op == Operator::OP_ARG || op == Operator::OP_RETV) {
-                const Var *arg1 = inst->getArg1();
+                const shared_ptr<Var> arg1 = inst->getArg1();
                 if (arg1->index != -1) {                    // 不是常数
                     double rs = inst->outVals[arg1->index]; // 结果变量常量传播结果
 
                     if (rs != UNDEF && rs != NAC) {     // 为常量
-                        Var *newVar = new Var((int)rs); // 计算的表达式结果
+                        shared_ptr<Var> newVar = make_shared<Var>((int)rs); // 计算的表达式结果
                         tab->addVar(newVar);            // 添加到符号表
                         inst->setArg1(newVar);          // 替换新的操作符与常量操作数
                     }
@@ -482,7 +482,7 @@ void ConstPropagation::condJmpOpt() {
             if (inst->isJcond()) {
                 Operator op = inst->getOp();
                 auto tar = inst->getTarget();
-                const Var *arg1 = inst->getArg1();
+                const auto arg1 = inst->getArg1();
 
                 double cond = NAC;
                 if (arg1->index == -1) {    // 参数不在值列表, 必是常量
@@ -498,31 +498,33 @@ void ConstPropagation::condJmpOpt() {
                     continue;
                 }
 
+                auto block = inst->block.lock();
+                auto tarBlock = tar->block.lock();
                 if (op == Operator::OP_JT) {
                     if (cond == 0) {
-                        inst->block->insts.remove(inst);            // 将该指令从基本块内删除
-                        if (dfg->blocks[j + 1] != tar->block) {     // 目标块不是紧跟块
-                            dfg->delLink(inst->block, tar->block);  // 从 DFG 内递归解除指令所在块到目标块的关联
+                        block->insts.remove(inst);              // 将该指令从基本块内删除
+                        if (dfg->blocks[j + 1] != tarBlock) {   // 目标块不是紧跟块
+                            dfg->delLink(block, tarBlock);      // 从 DFG 内递归解除指令所在块到目标块的关联
                         }
                     }
                     else {
                         inst->replace(Operator::OP_JMP, tar);
-                        if (dfg->blocks[j + 1] != tar->block) {             // 目标块不是紧跟块
-                            dfg->delLink(inst->block, dfg->blocks[j + 1]);  // 从 DFG 内递归解除指令所在块到紧跟块的关联
+                        if (dfg->blocks[j + 1] != tarBlock) {           // 目标块不是紧跟块
+                            dfg->delLink(block, dfg->blocks[j + 1]);    // 从 DFG 内递归解除指令所在块到紧跟块的关联
                         }
                     }
                 }
                 else if (op == Operator::OP_JF) {
                     if (cond == 0) {
                         inst->replace(Operator::OP_JMP, tar);
-                        if (dfg->blocks[j + 1] != tar->block) {             // 目标块不是紧跟块
-                            dfg->delLink(inst->block, dfg->blocks[j + 1]);  // 从 DFG 内递归解除指令所在块到紧跟块的关联
+                        if (dfg->blocks[j + 1] != tarBlock) {           // 目标块不是紧跟块
+                            dfg->delLink(block, dfg->blocks[j + 1]);    // 从 DFG 内递归解除指令所在块到紧跟块的关联
                         }
                     }
                     else {
-                        inst->block->insts.remove(inst);
-                        if (dfg->blocks[j + 1] != tar->block) {     // 目标块不是紧跟块
-                            dfg->delLink(inst->block, tar->block);  // 从 DFG 内递归解除指令所在块到目标块的关联
+                        block->insts.remove(inst);
+                        if (dfg->blocks[j + 1] != tarBlock) { // 目标块不是紧跟块
+                            dfg->delLink(block, tarBlock);      // 从 DFG 内递归解除指令所在块到目标块的关联
                         }
                     }
                 }

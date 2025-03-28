@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "error.h"
 #include "ir/genir.h"
 #include "lexer/lexer.h"
@@ -19,12 +21,12 @@ bool Args::opt = false;
 
 void Compiler::compile(const std::string &file) {
     // 准备
-    Scanner scanner(file);              // 扫描器
-    Error error(&scanner);              // 错误处理
-    Lexer lexer(scanner);               // 词法分析器
-    SymTab symtab;                      // 符号表
-    GenIR ir(symtab);                   // 中间代码生成器
-    Parser parser(lexer, symtab, ir);   // 语法分析器
+    Scanner scanner(file);                      // 扫描器
+    Error error(&scanner);                      // 错误处理
+    Lexer lexer(scanner);                       // 词法分析器
+    auto symtab = std::make_shared<SymTab>();   // 符号表
+    auto ir = GenIR::create(symtab);            // 中间代码生成器
+    Parser parser(lexer, symtab, ir);           // 语法分析器
 
     // 分析
     parser.analyse();
@@ -36,18 +38,18 @@ void Compiler::compile(const std::string &file) {
 
     // 中间结果
     if (Args::showSym) {
-        symtab.toString();
+        symtab->toString();
     }
     if (Args::showIr) {
-        symtab.printInterCode();
+        symtab->printInterCode();
     }
 
     // 优化
-    symtab.optimize();
+    symtab->optimize();
     if (Args::showOr) {
-        symtab.printOptCode();
+        symtab->printOptCode();
     }
 
     // 生成汇编代码
-    symtab.genAsm(file);
+    symtab->genAsm(file);
 }

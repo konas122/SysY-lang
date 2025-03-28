@@ -25,7 +25,7 @@ CopyPropagation::CopyPropagation(shared_ptr<DFG> g) : dfg(g)
         inst->copyInfo.gen = E;
         inst->copyInfo.kill = E;
 
-        Var *rs = inst->getResult();
+        auto rs = inst->getResult();
         Operator op = inst->getOp();
         if (inst->unknown()) {
             inst->copyInfo.kill = U;    // 杀死所有表达式
@@ -88,7 +88,7 @@ void CopyPropagation::analyse() {
 }
 
 // 递归检测 var 赋值的源头的实现函数
-Var *CopyPropagation::__find(const Set &in, Var *var, Var *src) const {
+shared_ptr<Var> CopyPropagation::__find(const Set &in, shared_ptr<Var> var, shared_ptr<Var> src) const {
     if (!var) {
         return nullptr;
     }
@@ -105,7 +105,7 @@ Var *CopyPropagation::__find(const Set &in, Var *var, Var *src) const {
     return var; // 找不到可替换的变量, 返回自身, 或者上层结果
 }
 
-Var *CopyPropagation::find(const Set &in, Var *var) const {
+shared_ptr<Var> CopyPropagation::find(const Set &in, shared_ptr<Var> var) const {
     return __find(in, var, var);
 }
 
@@ -113,23 +113,23 @@ void CopyPropagation::propagate() {
     analyse();
 
     for (auto inst : optCode) {
-        Var *rs = inst->getResult();
+        auto rs = inst->getResult();
         Operator op = inst->getOp();
-        Var *arg1 = inst->getArg1();
-        Var *arg2 = inst->getArg2();
+        auto arg1 = inst->getArg1();
+        auto arg2 = inst->getArg2();
 
         if (op == Operator::OP_SET) {       // 取值运算, 检查 *arg1=result
-            Var *newRs = find(inst->copyInfo.in, rs);
+            auto newRs = find(inst->copyInfo.in, rs);
             inst->replace(op, newRs, arg1); // 不论是否是新变量, 都更新指令
         }
         else if (op >= Operator::OP_AS && op <= Operator::OP_GET && op != Operator::OP_LEA) {
-            Var *newArg1 = find(inst->copyInfo.in, arg1);
-            Var *newArg2 = find(inst->copyInfo.in, arg2);
+            auto newArg1 = find(inst->copyInfo.in, arg1);
+            auto newArg2 = find(inst->copyInfo.in, arg2);
             inst->replace(op, rs, newArg1, newArg2);    // 不论是否是新变量, 都更新指令
         }
         // 条件表达式, 参数表达式, 返回表达式
         else if (op == Operator::OP_JT || op == Operator::OP_JF || op == Operator::OP_ARG || op == Operator::OP_RETV) {
-            Var *newArg1 = find(inst->copyInfo.in, arg1);
+            auto newArg1 = find(inst->copyInfo.in, arg1);
             inst->setArg1(newArg1); // 更新参数变量/返回值
         }
     }

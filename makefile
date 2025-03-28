@@ -1,8 +1,10 @@
+include define.mk
+
 AR = ar
 ARFLAGS = rcs
 
 CXX = g++
-CXXFLAGS = -g -std=c++17 -Wno-deprecated -DDEBUG -I compiler -Wall
+CXXFLAGS += -std=c++17 -Wno-deprecated -DDEBUG -I compiler -Wall
 
 NPROC = $(shell nproc)
 
@@ -40,7 +42,7 @@ $(MAIN_OBJ): main.cpp
 	@echo "    CPP   " $(notdir $@)
 
 $(EXE): $(OBJS)
-	@$(CXX) $(OBJS) -o $@
+	@$(CXX) $(OBJS) $(LDFLAGS) -o $@
 	@echo "    LD    " $@
 
 

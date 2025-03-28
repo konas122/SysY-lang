@@ -19,11 +19,11 @@ class InterInst;
 //  常量传播数据流分析框架
 class ConstPropagation
 {
-    SymTab *tab;        // 符号表
+    std::shared_ptr<SymTab> tab;        // 符号表
     std::shared_ptr<DFG> dfg;       // 数据流图指针
 
-    std::vector<Var *> vars;        // 变量集合
-    std::vector<Var *> glbVars;     // 全局变量的集合, G 处理函数调用等附加影响操作
+    std::vector<std::shared_ptr<Var>> vars;        // 变量集合
+    std::vector<std::shared_ptr<Var>> glbVars;     // 全局变量的集合, G 处理函数调用等附加影响操作
     std::vector<double> boundVals;  // 边界集合, Entry.out
     std::vector<double> initVals;   // 初值集合, B.out/B.out
 
@@ -41,7 +41,7 @@ public:
     ConstPropagation(const ConstPropagation &rhs) = delete;
     ConstPropagation &operator=(const ConstPropagation &rhs) = delete;
 
-    ConstPropagation(std::shared_ptr<DFG> g, SymTab *tab, std::vector<Var *> &paraVar); // 常量传播分析初始化
+    ConstPropagation(std::shared_ptr<DFG> g, std::shared_ptr<SymTab> tab, const std::vector<std::shared_ptr<Var>> &paraVar); // 常量传播分析初始化
     void propagate();   // 执行常量传播
 };
 

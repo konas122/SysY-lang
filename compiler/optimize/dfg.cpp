@@ -7,7 +7,7 @@ using namespace std;
 
 
 shared_ptr<Block> Block::create(const vector<shared_ptr<InterInst>> &codes) {
-    auto block = shared_ptr<Block>(new Block());
+    auto block = make_shared<Block>();
     block->init(codes);
     return block;
 }
@@ -86,7 +86,7 @@ void DFG::linkBlocks() {
         auto last = blocks[i]->insts.back();  // 基本块的最后一条指令
         if (last->isJmp() || last->isJcond()) {     // (直接/条件) 跳转
             blocks[i]->succs.emplace_back(last->getTarget()->block);    // 跳转目标块为后继
-            last->getTarget()->block->prevs.emplace_back(blocks[i]);    // 相反为前驱
+            last->getTarget()->block.lock()->prevs.emplace_back(blocks[i]);    // 相反为前驱
         }
     }
 }

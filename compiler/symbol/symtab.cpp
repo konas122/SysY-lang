@@ -20,17 +20,17 @@ _start:\n\
 \tmov eax, 1\n\
 \tint 0x80\n";
 
-Var *SymTab::voidVar = nullptr;
-Var *SymTab::zero = nullptr;
-Var *SymTab::one = nullptr;
-Var *SymTab::four = nullptr;
+shared_ptr<Var> SymTab::voidVar;
+shared_ptr<Var> SymTab::zero;
+shared_ptr<Var> SymTab::one;
+shared_ptr<Var> SymTab::four;
 
 
 SymTab::SymTab() {
-    voidVar = new Var();
-    zero = new Var(1);
-    one = new Var(1);
-    four = new Var(4);
+    voidVar = make_shared<Var>();
+    zero = make_shared<Var>(1);
+    one = make_shared<Var>(1);
+    four = make_shared<Var>(4);
 
     addVar(voidVar);
     addVar(one);
@@ -38,28 +38,16 @@ SymTab::SymTab() {
     addVar(four);
 
     scopeId = 0;
-    curFun = nullptr;
-    ir = nullptr;
     scopePath.emplace_back(0);
 }
 
 SymTab::~SymTab() {
-    for (const auto &fun : funTab) {
-        delete fun.second;
-    }
-
-    for (const auto &varIt : varTab) {
-        for (auto var : varIt.second) {
-            delete var;
-        }
-    }
-
-    for (const auto &str : strTab) {
-        delete str.second;
-    }
+    funTab.clear();
+    varTab.clear();
+    strTab.clear();
 }
 
-void SymTab::setIr(GenIR *ir) {
+void SymTab::setIr(shared_ptr<GenIR> ir) {
     this->ir = ir;
 }
 
@@ -67,14 +55,14 @@ vector<int> &SymTab::getScopePath() {
     return scopePath;
 }
 
-void SymTab::addVar(Var *var) {
+void SymTab::addVar(shared_ptr<Var> var) {
     if (varTab.count(var->getName()) == 0) {
-        varTab[var->getName()] = vector<Var *>();
+        varTab[var->getName()] = vector<shared_ptr<Var>>();
         varTab[var->getName()].emplace_back(var);
         varList.emplace_back(var->getName());
     }
     else {
-        vector<Var *> &list = varTab[var->getName()];
+        vector<shared_ptr<Var>> &list = varTab[var->getName()];
         size_t i = 0;
         for (; i < list.size(); ++i) {
             if (list[i]->getPath().back() == var->getPath().back()) {
@@ -86,7 +74,6 @@ void SymTab::addVar(Var *var) {
         }
         else {
             SEMERROR(cast_int(SemError::VAR_RE_DEF), var->getName());
-            delete var;
             return;
         }
     }
@@ -99,14 +86,14 @@ void SymTab::addVar(Var *var) {
     }
 }
 
-void SymTab::addStr(Var *v) {
+void SymTab::addStr(shared_ptr<Var> v) {
     strTab[v->getName()] = v;
 }
 
-Var *SymTab::getVar(const string &name) {
-    Var *select = nullptr;
+shared_ptr<Var> SymTab::getVar(const string &name) {
+    shared_ptr<Var> select = nullptr;
     if (varTab.count(name)) {
-        vector<Var *> &list = varTab[name];
+        vector<shared_ptr<Var>> &list = varTab[name];
         int maxLen = 0;
         int pathLen = scopePath.size();
         for (size_t i = 0; i < list.size(); ++i) {
@@ -127,13 +114,13 @@ Var *SymTab::getVar(const string &name) {
     return select;
 }
 
-vector<Var *> SymTab::getGlbVars() {
-    vector<Var *> glbVars;
+vector<shared_ptr<Var>> SymTab::getGlbVars() {
+    vector<shared_ptr<Var>> glbVars;
     for (auto &varName : varList) {
         if (varName[0] == '<') {
             continue;
         }
-        vector<Var *> &list = varTab[varName];
+        vector<shared_ptr<Var>> &list = varTab[varName];
         for (auto &var : list) {
             if (var->getPath().size() == 1) {
                 glbVars.emplace_back(var);
@@ -144,9 +131,9 @@ vector<Var *> SymTab::getGlbVars() {
     return glbVars;
 }
 
-Fun *SymTab::getFun(const string &name, const vector<Var *> &args) {
+shared_ptr<Fun> SymTab::getFun(const string &name, const vector<shared_ptr<Var>> &args) {
     if (funTab.count(name)) {
-        Fun *fun = funTab[name];
+        auto fun = funTab[name];
         if (!fun->match(args)) {
             SEMERROR(cast_int(SemError::FUN_CALL_ERR), name);
             return nullptr;
@@ -157,26 +144,25 @@ Fun *SymTab::getFun(const string &name, const vector<Var *> &args) {
     return nullptr;
 }
 
-Fun *SymTab::getCurFun() {
+shared_ptr<Fun> SymTab::getCurFun() {
     return curFun;
 }
 
-void SymTab::decFun(Fun *fun) {
+void SymTab::decFun(shared_ptr<Fun> fun) {
     fun->setExtern(true);
     if (funTab.count(fun->getName()) == 0) {
         funTab[fun->getName()] = fun;
         funList.emplace_back(fun->getName());
     }
     else {
-        Fun *last = funTab[fun->getName()];
+        auto last = funTab[fun->getName()];
         if (!last->match(fun)) {
             SEMERROR(cast_int(SemError::FUN_DEC_ERR), fun->getName());
         }
-        delete fun;
     }
 }
 
-void SymTab::defFun(Fun *fun) {
+void SymTab::defFun(shared_ptr<Fun> fun) {
     if (fun->getExtern()) {
         SEMERROR(cast_int(SemError::EXTERN_FUN_DEF), fun->getName());
         fun->setExtern(false);
@@ -187,7 +173,7 @@ void SymTab::defFun(Fun *fun) {
         funList.emplace_back(fun->getName());
     }
     else {
-        Fun *last = funTab[fun->getName()];
+        auto last = funTab[fun->getName()];
         if (last->getExtern()) {
             if (!last->match(fun)) {
                 SEMERROR(cast_int(SemError::FUN_DEC_ERR), fun->getName());
@@ -197,7 +183,6 @@ void SymTab::defFun(Fun *fun) {
         else {
             SEMERROR(cast_int(SemError::FUN_RE_DEF), fun->getName());
         }
-        delete fun;
         fun = last;
     }
     curFun = fun;
@@ -232,16 +217,16 @@ void SymTab::leave() {
 
 void SymTab::optimize() {
     for (const auto &funName : funList) {
-        funTab[funName]->optimize(this);
+        funTab[funName]->optimize(shared_from_this());
     }
 }
 
 void SymTab::toString() {
     printf("---------- Var ----------\n");
     for (const auto &varName : varList) {
-        const vector<Var *> &list = varTab[varName];
+        const vector<shared_ptr<Var>> &list = varTab[varName];
         printf("%s:\n", varName.c_str());
-        for (const auto var : list) {
+        for (const auto &var : list) {
             printf("\t");
             var->toString();
             printf("\n");
@@ -274,9 +259,9 @@ void SymTab::printOptCode() {
 void SymTab::genData(FILE *file) {
     fprintf(file, "\nsection .data\n");
 
-    vector<Var *> glbVars = getGlbVars();   // 获取所有全局变量
+    vector<shared_ptr<Var>> glbVars = getGlbVars();   // 获取所有全局变量
     for (unsigned int i = 0; i < glbVars.size(); i++) {
-        const Var *var = glbVars[i];
+        const shared_ptr<Var>var = glbVars[i];
         fprintf(file, "global %s\n", var->getName().c_str());
         fprintf(file, "\t%s ", var->getName().c_str());
 
@@ -302,7 +287,7 @@ void SymTab::genData(FILE *file) {
     }
 
     for (const auto &strIt : strTab) {
-        const Var *str = strIt.second;
+        const shared_ptr<Var>str = strIt.second;
         fprintf(file, "\t%s db %s\n", str->getName().c_str(), str->getRawStr().c_str());
     }
     fprintf(file, "\nsection .bss\n");

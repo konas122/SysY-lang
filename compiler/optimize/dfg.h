@@ -37,7 +37,6 @@ public:
     Block &operator=(const Block &&) = delete;
 
 private:
-    Block() = default;
     void init(const std::vector<std::shared_ptr<InterInst>> &codes);
 };
 

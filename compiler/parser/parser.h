@@ -22,18 +22,18 @@ class Parser
 
     // 声明与定义
     void def(bool ext, Tag t);
-    Var *defdata(bool ext, Tag t);
+    std::shared_ptr<Var> defdata(bool ext, Tag t);
     void deflist(bool ext, Tag t);
-    Var *varrdef(bool ext, Tag t, bool ptr, std::string_view name);
-    Var *init(bool ext, Tag t, bool ptr, std::string_view name);
+    std::shared_ptr<Var> varrdef(bool ext, Tag t, bool ptr, std::string_view name);
+    std::shared_ptr<Var> init(bool ext, Tag t, bool ptr, std::string_view name);
     void idtail(bool ext, Tag t, bool ptr, std::string_view name);
 
     // 函数
-    Var *paradatatail(Tag t, std::string &name);
-    Var *paradata(Tag t);
-    void para(std::vector<Var *> &list);
-    void paralist(std::vector<Var *> &list);
-    void funtail(Fun *f);
+    std::shared_ptr<Var> paradatatail(Tag t, std::string &name);
+    std::shared_ptr<Var> paradata(Tag t);
+    void para(std::vector<std::shared_ptr<Var>> &list);
+    void paralist(std::vector<std::shared_ptr<Var>> &list);
+    void funtail(std::shared_ptr<Fun> f);
     void block();
     void subprogram();
     void localdef();
@@ -47,47 +47,47 @@ class Parser
     void ifstat();
     void elsestat();
     void switchstat();
-    void casestat(Var *cond);
-    Var *caselabel();
+    void casestat(std::shared_ptr<Var> cond);
+    std::shared_ptr<Var> caselabel();
 
     // 表达式
-    Var *altexpr();
-    Var *expr();
-    Var *assexpr();
-    Var *asstail(Var *lval);
-    Var *orexpr();
-    Var *ortail(Var *lval);
-    Var *andexpr();
-    Var *andtail(Var *lval);
-    Var *cmpexpr();
-    Var *cmptail(Var *lval);
+    std::shared_ptr<Var> altexpr();
+    std::shared_ptr<Var> expr();
+    std::shared_ptr<Var> assexpr();
+    std::shared_ptr<Var> asstail(std::shared_ptr<Var> lval);
+    std::shared_ptr<Var> orexpr();
+    std::shared_ptr<Var> ortail(std::shared_ptr<Var> lval);
+    std::shared_ptr<Var> andexpr();
+    std::shared_ptr<Var> andtail(std::shared_ptr<Var> lval);
+    std::shared_ptr<Var> cmpexpr();
+    std::shared_ptr<Var> cmptail(std::shared_ptr<Var> lval);
     Tag cmps();
-    Var *aloexpr();
-    Var *alotail(Var *lval);
+    std::shared_ptr<Var> aloexpr();
+    std::shared_ptr<Var> alotail(std::shared_ptr<Var> lval);
     Tag adds();
-    Var *item();
-    Var *itemtail(Var *lval);
+    std::shared_ptr<Var> item();
+    std::shared_ptr<Var> itemtail(std::shared_ptr<Var> lval);
     Tag muls();
-    Var *factor();
+    std::shared_ptr<Var> factor();
     Tag lop();
-    Var *val();
+    std::shared_ptr<Var> val();
     Tag rop();
-    Var *elem();
-    Var *literal();
-    Var *idexpr(const std::string& name);
-    void realarg(std::vector<Var *> &args);
-    void arglist(std::vector<Var *> &args);
-    Var *arg();
+    std::shared_ptr<Var> elem();
+    std::shared_ptr<Var> literal();
+    std::shared_ptr<Var> idexpr(const std::string& name);
+    void realarg(std::vector<std::shared_ptr<Var>> &args);
+    void arglist(std::vector<std::shared_ptr<Var>> &args);
+    std::shared_ptr<Var> arg();
 
     // 词法分析
     Lexer &lexer;           // 词法分析器
     std::unique_ptr<Token> look = nullptr;  // 超前查看的字符
 
     // 符号表
-    SymTab &symtab;
+    std::shared_ptr<SymTab> symtab;
 
     // 中间代码生成器
-    GenIR &ir;
+    std::shared_ptr<GenIR> ir;
 
     // 语法分析与错误修复
     void move();                                             // 移进
@@ -95,11 +95,10 @@ class Parser
     void recovery(bool cond, SynError lost, SynError wrong); // 错误修复
 
 public:
-    Parser(const Parser &rhs) = delete;
-    Parser &operator=(const Parser &rhs) = delete;
+    const Parser &operator=(const Parser &&rhs) = delete;
 
     // 构造与初始化
-    Parser(Lexer &lex, SymTab &tab, GenIR &inter);
+    Parser(Lexer &lex, std::shared_ptr<SymTab> tab, std::shared_ptr<GenIR> inter);
 
     // 外部调用接口
     void analyse(); // 语法分析主程序

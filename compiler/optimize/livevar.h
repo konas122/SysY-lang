@@ -16,10 +16,10 @@ class InterInst;
 // 活跃变量数据流分析框架
 class LiveVar
 {
-    SymTab *tab;    // 符号表
+    std::shared_ptr<SymTab> tab;    // 符号表
     std::shared_ptr<DFG> dfg;       // 数据流图指针
 
-    std::vector<Var *> varList;     // 变量列表
+    std::vector<std::shared_ptr<Var>> varList;     // 变量列表
     std::list<std::shared_ptr<InterInst>> optCode;  // 记录前面阶段优化后的代码
 
     Set U;  // 全集
@@ -32,13 +32,13 @@ public:
     LiveVar(const LiveVar &rhs) = delete;
     LiveVar &operator=(const LiveVar &rhs) = delete;
 
-    LiveVar(std::shared_ptr<DFG> g, SymTab *t, const std::vector<Var *> &paraVar);
+    LiveVar(std::shared_ptr<DFG> g, std::shared_ptr<SymTab> t, const std::vector<std::shared_ptr<Var>> &paraVar);
 
     void analyse(); // 活跃变量数据流分析
     void elimateDeadCode(int stop = false); // 死代码消除
 
     Set &getE();    // 返回空集
-    std::vector<Var*> getCoVar(const Set &liveout) const;   // 根据提供的 liveout 集合提取优化后的变量集合 (冲突变量)
+    std::vector<std::shared_ptr<Var>> getCoVar(const Set &liveout) const;   // 根据提供的 liveout 集合提取优化后的变量集合 (冲突变量)
 };
 
 #endif

@@ -12,12 +12,17 @@
 using namespace std;
 
 
-Node::Node(Var *v, const Set &E) : var(v), exColors(E)
+Node::Node(shared_ptr<Var> v, const Set &E) : var(v), exColors(E)
 {}
 
-void Node::addLink(Node *node) {
-    auto pos = lower_bound(links.begin(), links.end(), node);
-    if (pos == links.end() || *pos != node) {
+void Node::addLink(weak_ptr<Node> node) {
+    auto pos = lower_bound(
+        links.begin(), links.end(), node,
+        [](const weak_ptr<Node> &a, const weak_ptr<Node> &b)
+        {
+            return a.lock() < b.lock();
+        });
+    if (pos == links.end() || !(pos->lock() == node.lock())) {
         links.insert(pos, node);
         degree++;
     }
@@ -39,7 +44,7 @@ void Node::paint(const Set &colorBox) {
             var->regId = color;
             degree = -1;
             for (size_t j = 0; j < links.size(); ++j) {
-                links[j]->addExColor(color);
+                links[j].lock()->addExColor(color);
             }
             return;
         }
@@ -49,26 +54,23 @@ void Node::paint(const Set &colorBox) {
 
 // =============================================================================
 
-Scope::Scope(int i, int addr) : id(i), esp(addr), x(0), y(0), parent(nullptr) {}
+Scope::Scope(int i, int addr) : id(i), esp(addr), x(0), y(0) {}
 
 Scope::~Scope() {
-    for (const auto child : children) {
-        delete child;
-    }
+    children.clear();
 }
 
 // 查找 i 作用域, 不存在则产生一个子作用域, id=i, esp 继承当前父 esp
-Scope *Scope::find(int i) {
+shared_ptr<Scope> Scope::find(int i) {
     // 二分查找
-    Scope *sc = new Scope(i, esp);  // 先创建子作用域, 拷贝父 esp
+    auto sc = make_shared<Scope>(i, esp);  // 先创建子作用域, 拷贝父 esp
     auto pos = lower_bound(children.begin(), children.end(), sc, scope_less());
 
     if (pos == children.end() || (*pos)->id != i) { // 没有找到, 则插入
-        children.insert(pos, sc);   // 有序插入
-        sc->parent = this;          // 记录父节点
+        children.insert(pos, sc);           // 有序插入
+        sc->parent = shared_from_this();    // 记录父节点
     }
     else {
-        delete sc;  // 删除查找对象
         sc = *pos;  // 找到了
     }
     return sc;
@@ -76,10 +78,9 @@ Scope *Scope::find(int i) {
 
 // =============================================================================
 
-CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, LiveVar *lv, Fun *f) {
-    scRoot = nullptr;
-
-    fun = f;
+CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<shared_ptr<Var>> &para, shared_ptr<LiveVar> lv, shared_ptr<Fun> f)
+    : scRoot(nullptr), fun(f)
+{
     this->optCode = optCode;
     this->lv = lv;
 
@@ -95,11 +96,11 @@ CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, Live
     for (auto inst : optCode) {
         Operator op = inst->getOp();
         if (op == Operator::OP_DEC) {
-            Var *arg1 = inst->getArg1();
+            auto arg1 = inst->getArg1();
             varList.emplace_back(arg1);
         }
         if (op == Operator::OP_LEA) {
-            Var *arg1 = inst->getArg1();
+            auto arg1 = inst->getArg1();
             if (arg1) {
                 arg1->inMem = true; // 只能放在内存
             }
@@ -114,13 +115,13 @@ CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, Live
 
     // 构建图节点
     for (size_t i = 0; i < varList.size(); ++i) {
-        Node *node;
+        shared_ptr<Node> node;
         auto var = varList[i];
         if (var->getArray() || var->inMem) {
-            node = new Node(var, U);
+            node = make_shared<Node>(var, U);
         }
         else {
-            node = new Node(var, E);
+            node = make_shared<Node>(var, E);
         }
         var->index = i;
         nodes.emplace_back(node);
@@ -132,7 +133,8 @@ CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, Live
         Set &liveout = (*i)->liveInfo.out;
         if (liveout != buf) {   // 新的冲突关系
             buf = liveout;
-            vector<Var *> coVar = lv->getCoVar(liveout & mask);
+            auto tmp = liveout & mask;
+            auto coVar = lv->getCoVar(tmp);
             for (size_t j = 0; j < coVar.size() - 1; ++j) {
                 for (size_t k = j + 1; k < coVar.size(); ++k) {
                     nodes[coVar[j]->index]->addLink(nodes[coVar[k]->index]);    // 添加关系, 不会重复添加
@@ -144,16 +146,13 @@ CoGraph::CoGraph(list<shared_ptr<InterInst>> &optCode, vector<Var *> &para, Live
 }
 
 CoGraph::~CoGraph() {
-    for (auto node : nodes) {
-        delete node;
-    }
-    delete scRoot;
+    nodes.clear();
 }
 
 // 选择度最大的未处理节点, 利用最大堆根据节点度堆排序
-Node *CoGraph::pickNode() {
+shared_ptr<Node> CoGraph::pickNode() {
     make_heap(nodes.begin(), nodes.end(), node_less());
-    Node *node = nodes.front();
+    auto node = nodes.front();
     return node;
 }
 
@@ -162,15 +161,15 @@ void CoGraph::regAlloc() {
     Set colorBox = U;
     int nodeNum = nodes.size();
     for (auto i = 0; i < nodeNum; ++i) {
-        Node *node = pickNode();
+        auto node = pickNode();
         node->paint(colorBox);
     }
 }
 
-void CoGraph::printTree(Scope *root, bool tree_style) const {
+void CoGraph::printTree(shared_ptr<Scope> root, bool tree_style) const {
     if (!tree_style) {
         printf("( <%d>: %d ", root->id, root->esp);
-        for (const auto child : root->children) {
+        for (const auto &child : root->children) {
             printTree(child, false);
         }
         printf(") ");
@@ -181,18 +180,18 @@ void CoGraph::printTree(Scope *root, bool tree_style) const {
     }
 }
 
-void CoGraph::__printTree(Scope *root, int blk, int x, int &y) const {
+void CoGraph::__printTree(shared_ptr<Scope> root, int blk, int x, int &y) const {
     // 记录打印位置
     root->x = x;
     root->y = y;
 
     // 填充不连续的列
-    if (root->parent) {
-        vector<Scope *> &brother = root->parent->children;  // 兄弟节点
-        vector<Scope *>::const_iterator pos;
+    if (auto parent = root->parent.lock()) {
+        vector<shared_ptr<Scope>> &brother = parent->children;  // 兄弟节点
+        vector<shared_ptr<Scope>>::const_iterator pos;
         pos = lower_bound(brother.begin(), brother.end(), root, Scope::scope_less());   // 查找位置, 一定存在
         if (pos != brother.begin()) {           // 不是第一个兄弟
-            const Scope *prev = (*--pos);       // 前一个兄弟
+            const auto prev = (*--pos);       // 前一个兄弟
             int disp = root->y - prev->y - 1;   // 求差值
             printf("\033[s");                   // 保存光标位置
 
@@ -208,7 +207,7 @@ void CoGraph::__printTree(Scope *root, int blk, int x, int &y) const {
     printf("|——\033[33m<%d>:%d\033[0m", root->id, root->esp);
     printf("\n");
     x += (blk + 1) * 4; // 计算空的列个数
-    for (const auto child : root->children) {
+    for (const auto &child : root->children) {
         ++y;            // 同级节点累加行
         int t = blk;
         while (t--) {
@@ -220,7 +219,7 @@ void CoGraph::__printTree(Scope *root, int blk, int x, int &y) const {
 }
 
 int &CoGraph::getEsp(const vector<int> &path) {
-    Scope *scope = scRoot;  // 当前作用域初始化为全局作用域
+    auto scope = scRoot;  // 当前作用域初始化为全局作用域
     for (size_t i = 1; i < path.size(); i++) {
         scope = scope->find(path[i]); // 向下寻找作用域, 没有会自动创建
     }
@@ -230,13 +229,13 @@ int &CoGraph::getEsp(const vector<int> &path) {
 // 为不能着色的变量分配栈帧地址
 void CoGraph::stackAlloc() {
     // 初始化作用域序列
-    scRoot = new Scope(0, 0);
+    scRoot = make_shared<Scope>(0, 0);
     int max = 0;
 
     for (auto inst : optCode) {
         Operator op = inst->getOp();
         if (op == Operator::OP_DEC) {
-            Var *arg1 = inst->getArg1();
+            auto arg1 = inst->getArg1();
             if (arg1->regId != -1) {
                 continue;
             }

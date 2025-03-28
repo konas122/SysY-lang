@@ -4,6 +4,8 @@
 #include "common.h"
 #include "lexer/token.h"
 
+#include <memory>
+
 
 class Var
 {
@@ -21,7 +23,7 @@ class Var
 
     // 初始值部分
     bool isLeft;   // 是否可以作为左值
-    Var *initData; // 缓存初值数据, 延迟处置处理
+    std::shared_ptr<Var> initData; // 缓存初值数据, 延迟处置处理
     bool inited;   // 是否初始化数据, 字面量一定是初始化了的特殊变量
     union
     {
@@ -30,7 +32,7 @@ class Var
     };
     std::string ptrVal; // 初始化字符指针常量字符串的名称
     std::string strVal; // 字符串常量的值
-    Var *ptr;           // 指向当前变量指针变量
+    std::shared_ptr<Var> ptr;           // 指向当前变量指针变量
 
     // 附加信息
     int size;   // 变量的大小
@@ -44,20 +46,20 @@ class Var
     void clear();                       // 清除关键字段信息
 
 public:
-    static Var *getStep(const Var *v);
-    static Var *getVoid();
-    static Var *getTrue();
+    static std::shared_ptr<Var> getStep(const std::shared_ptr<Var> v);
+    static std::shared_ptr<Var> getVoid();
+    static std::shared_ptr<Var> getTrue();
 
-    Var(const std::vector<int> &sp, bool ext, Tag t, bool ptr, std::string_view name, Var *init = nullptr);   // 变量
-    Var(const std::vector<int> &sp, bool ext, Tag t, std::string_view name, int len);                         // 数组
+    Var(const std::vector<int> &sp, bool ext, Tag t, bool ptr, std::string_view name, std::shared_ptr<Var> init = nullptr); // 变量
+    Var(const std::vector<int> &sp, bool ext, Tag t, std::string_view name, int len);                                       // 数组
     explicit Var(Token *lt);                            // 设定字面量
     explicit Var(int val);                              // 整数变量
     Var(const std::vector<int> &sp, Tag t, bool ptr);   // 临时变量
-    Var(const std::vector<int> &sp, const Var *v);      // 拷贝变量
+    Var(const std::vector<int> &sp, const std::shared_ptr<Var> v);      // 拷贝变量
     Var();                                              // void 变量
 
     bool setInit();     // 设定初始化, 由调用者决定初始化方式和顺序
-    Var *getInitData(); // 获取初始化变量数据
+    std::shared_ptr<Var> getInitData(); // 获取初始化变量数据
 
     std::vector<int> &getPath();    // 获取 scopePath
 
@@ -71,8 +73,8 @@ public:
     std::string getPtrVal() const;  // 获取指针变量
     std::string getRawStr() const;  // 获取原始字符串值
     std::string getStrVal() const;  // 获取字符串常量内容
-    Var *getPointer();          // 获取指针
-    void setPointer(Var *p);    // 设置指针变量
+    std::shared_ptr<Var> getPointer();          // 获取指针
+    void setPointer(std::shared_ptr<Var> p);    // 设置指针变量
 
     void setLeft(bool lf);      // 设置变量的左值属性
     bool getLeft() const;       // 获取左值属性

@@ -26,7 +26,7 @@ using namespace std;
 #define SEMWARN(code, name) Error::semWarn(code, name)
 
 
-Fun::Fun(bool ext, Tag t, std::string_view n, const vector<Var *> &paraList)
+Fun::Fun(bool ext, Tag t, std::string_view n, const vector<shared_ptr<Var>> &paraList)
     : externed(ext), type(t), name(n), paraVar(paraList)
 {
     curEsp = Plat::stackBase;
@@ -49,7 +49,7 @@ Fun::~Fun() {
     }
 }
 
-void Fun::locate(Var *var) {
+void Fun::locate(shared_ptr<Var> var) {
     int size = var->getSize();
     size += (4 - size % 4) % 4;
     scopeEsp.back() += size;
@@ -57,7 +57,7 @@ void Fun::locate(Var *var) {
     var->setOffset(-curEsp);
 }
 
-bool Fun::match(Fun *f) {
+bool Fun::match(shared_ptr<Fun> f) {
     if (name != f->name) {
         return false;
     }
@@ -83,7 +83,7 @@ bool Fun::match(Fun *f) {
     return true;
 }
 
-bool Fun::match(const vector<Var *> &args) {
+bool Fun::match(const vector<shared_ptr<Var>> &args) {
     if (paraVar.size() != args.size()) {
         return false;
     }
@@ -95,7 +95,7 @@ bool Fun::match(const vector<Var *> &args) {
     return true;
 }
 
-void Fun::define(const Fun *def) {
+void Fun::define(const std::shared_ptr<Fun> def) {
     externed = false;
     paraVar = def->paraVar;
 }
@@ -138,7 +138,7 @@ string &Fun::getName() {
     return name;
 }
 
-vector<Var *> &Fun::getParaVar() {
+vector<shared_ptr<Var>> &Fun::getParaVar() {
     return paraVar;
 }
 
@@ -198,7 +198,7 @@ void Fun::printOptCode() const {
     printf("--------------<%s>End---------------\n", name.c_str());
 }
 
-void Fun::optimize(SymTab *tab) {
+void Fun::optimize(shared_ptr<SymTab> tab) {
     if (externed) {
         return;
     }
@@ -225,15 +225,15 @@ void Fun::optimize(SymTab *tab) {
     cp.propagate();
 
     // 活跃变量
-    LiveVar lv(dfg, tab, paraVar);
-    lv.elimateDeadCode();
+    auto lv = make_shared<LiveVar>(dfg, tab, paraVar);
+    lv->elimateDeadCode();
 
     // 优化结果存储在 optCode
     dfg->toCode(optCode);   // 导出数据流图为中间代码
 
 #ifdef REG_OPT
     // 寄存器分配和局部变量栈地址重新计算
-    CoGraph cg(optCode, paraVar, &lv, this);    // 初始化冲突图
+    CoGraph cg(optCode, paraVar, lv, shared_from_this());    // 初始化冲突图
     cg.alloc();                                 // 重新分配变量的寄存器和栈帧地址
 #endif
 }

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-LiveVar::LiveVar(shared_ptr<DFG> g, SymTab *t, const vector<Var *>& paraVar) : tab(t), dfg(g)
+LiveVar::LiveVar(shared_ptr<DFG> g, shared_ptr<SymTab> t, const vector<shared_ptr<Var>>& paraVar) : tab(t), dfg(g)
 {
     varList = tab->getGlbVars();
     int glbNum = varList.size();
@@ -42,9 +42,9 @@ LiveVar::LiveVar(shared_ptr<DFG> g, SymTab *t, const vector<Var *>& paraVar) : t
         inst->liveInfo.def = E;
 
         Operator op = inst->getOp();
-        Var *rs = inst->getResult();
-        const Var *arg1 = inst->getArg1();
-        const Var *arg2 = inst->getArg2();
+        auto rs = inst->getResult();
+        const auto arg1 = inst->getArg1();
+        const auto arg2 = inst->getArg2();
 
         // 常规运算
         if (op >= Operator::OP_AS && op <= Operator::OP_LEA) {
@@ -137,8 +137,8 @@ void LiveVar::analyse() {
     }
 }
 
-vector<Var *> LiveVar::getCoVar(const Set &liveout) const {
-    vector<Var *> coVar;
+vector<shared_ptr<Var>> LiveVar::getCoVar(const Set &liveout) const {
+    vector<shared_ptr<Var>> coVar;
     for (size_t i = 0; i < varList.size(); i++) {
         if (liveout.get(i)) {
             coVar.emplace_back(varList[i]);    // 将活跃的变量保存
@@ -161,9 +161,9 @@ void LiveVar::elimateDeadCode(int stop) {
             if (inst->isDead || op == Operator::OP_DEC) {
                 continue;
             }
-            Var *rs = inst->getResult();
-            Var *arg1 = inst->getArg1();
-            Var *arg2 = inst->getArg2();
+            auto rs = inst->getResult();
+            auto arg1 = inst->getArg1();
+            auto arg2 = inst->getArg2();
             if (rs) {
                 rs->live = true;
             }
@@ -178,7 +178,7 @@ void LiveVar::elimateDeadCode(int stop) {
         for (auto inst : optCode) {
             Operator op = inst->getOp();
             if (op == Operator::OP_DEC) {
-                const Var *arg1 = inst->getArg1();
+                const auto arg1 = inst->getArg1();
                 if (!arg1->live) {
                     inst->isDead = true;
                 }
@@ -196,8 +196,8 @@ void LiveVar::elimateDeadCode(int stop) {
             continue;
         }
         Operator op = inst->getOp();
-        Var *rs = inst->getResult();
-        Var *arg1 = inst->getArg1();
+        auto rs = inst->getResult();
+        auto arg1 = inst->getArg1();
 
         if ((op >= Operator::OP_AS && op <= Operator::OP_LEA) || op == Operator::OP_GET) {
             if (rs->getPath().size() == 1) {

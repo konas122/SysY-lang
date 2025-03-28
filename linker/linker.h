@@ -10,14 +10,14 @@ using Elf_file = LINK::Elf_file;
 
 
 // 一个数据块
-struct Block
+struct LinkBlock
 {
     std::unique_ptr<char[]> data;
     uint32_t offset;
     uint32_t size;
 
-    Block(std::unique_ptr<char[]>&& d, uint32_t off, uint32_t s);
-    ~Block();
+    LinkBlock(std::unique_ptr<char[]>&& d, uint32_t off, uint32_t s);
+    ~LinkBlock();
 };
 
 
@@ -31,7 +31,7 @@ struct SegList
     uint32_t size;      // 合并后大小
     uint32_t begin;     // 对齐前开始位置偏移
     std::vector<std::shared_ptr<Elf_file>> ownerList;   // 拥有该段的文件序列
-    std::vector<std::shared_ptr<Block>> blocks;         // 记录合并后的数据块序列
+    std::vector<std::shared_ptr<LinkBlock>> blocks;         // 记录合并后的数据块序列
 
     void allocAddr(const std::string &name, uint32_t &base, uint32_t &off); // 每种类型的段计算自己的段修正后位置
     void relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr);       // 根据提供的重定位信息重定位地址

@@ -36,7 +36,7 @@ using namespace std;
     _(Tag::KW_SWITCH) _(Tag::KW_RETURN) _(Tag::KW_BREAK) _(Tag::KW_CONTINUE)
 
 
-Parser::Parser(Lexer& lex, SymTab &tab, GenIR &inter)
+Parser::Parser(Lexer& lex, shared_ptr<SymTab> tab, shared_ptr<GenIR> inter)
     : lexer(lex), symtab(tab), ir(inter)
 {}
 
@@ -108,7 +108,7 @@ Tag Parser::type() {
 /**
  * <defdata> -> ident <varrdef> | mul ident <init>
  */
-Var *Parser::defdata(bool ext, Tag t) {
+shared_ptr<Var> Parser::defdata(bool ext, Tag t) {
     string name;
     if (F(Tag::ID)) {
         name = static_cast<Id *>(look.get())->name;
@@ -134,7 +134,7 @@ Var *Parser::defdata(bool ext, Tag t) {
  */
 void Parser::deflist(bool ext, Tag t) {
     if (match(Tag::COMMA)) {
-        symtab.addVar(defdata(ext, t));
+        symtab->addVar(defdata(ext, t));
         deflist(ext, t);
     }
     else if (match(Tag::SEMICON)) {
@@ -143,7 +143,7 @@ void Parser::deflist(bool ext, Tag t) {
     else {
         if (F(Tag::ID)_(Tag::MUL)) {
             recovery(1, SynError::COMMA_LOST, SynError::COMMA_WRONG);
-            symtab.addVar(defdata(ext, t));
+            symtab->addVar(defdata(ext, t));
             deflist(ext, t);
         }
         else {
@@ -156,7 +156,7 @@ void Parser::deflist(bool ext, Tag t) {
 /**
  * <varrdef> -> lbrack num rbrack | <init>
  */
-Var *Parser::varrdef(bool ext, Tag t, bool ptr, std::string_view name) {
+shared_ptr<Var> Parser::varrdef(bool ext, Tag t, bool ptr, std::string_view name) {
     if (match(Tag::LBRACK)) {
         int len = 0;
         if (F(Tag::NUM)) {
@@ -171,7 +171,7 @@ Var *Parser::varrdef(bool ext, Tag t, bool ptr, std::string_view name) {
             recovery(F(Tag::COMMA) _(Tag::SEMICON), SynError::RBRACK_LOST, SynError::RBRACK_WRONG);
         }
 
-        return new Var(symtab.getScopePath(), ext, t, name, len);
+        return make_shared<Var>(symtab->getScopePath(), ext, t, name, len);
     }
     return init(ext, t, ptr, name);
 }
@@ -179,12 +179,12 @@ Var *Parser::varrdef(bool ext, Tag t, bool ptr, std::string_view name) {
 /**
  * <init> -> assign <expr> | ^
  */
-Var *Parser::init(bool ext, Tag t, bool ptr, std::string_view name) {
-    Var *initVal = nullptr;
+shared_ptr<Var> Parser::init(bool ext, Tag t, bool ptr, std::string_view name) {
+    shared_ptr<Var> initVal = nullptr;
     if (match(Tag::ASSIGN)) {
         initVal = expr();
     }
-    return new Var(symtab.getScopePath(), ext, t, ptr, name, initVal);
+    return make_shared<Var>(symtab->getScopePath(), ext, t, ptr, name, initVal);
 }
 
 /**
@@ -200,7 +200,7 @@ void Parser::def(bool ext, Tag t) {
         else {
             recovery(F(Tag::SEMICON) _(Tag::COMMA) _(Tag::ASSIGN), SynError::ID_LOST, SynError::ID_WRONG);
         }
-        symtab.addVar(init(ext, t, true, name));
+        symtab->addVar(init(ext, t, true, name));
         deflist(ext, t);
     }
     else {
@@ -220,18 +220,18 @@ void Parser::def(bool ext, Tag t) {
  */
 void Parser::idtail(bool ext, Tag t, [[maybe_unused]] bool ptr, std::string_view name) {
     if (match(Tag::LPAREN)) {   // 函数
-        symtab.enter();
-        vector<Var *> paraList;
+        symtab->enter();
+        vector<shared_ptr<Var>> paraList;
         para(paraList);
         if (!match(Tag::RPAREN)) {
             recovery(F(Tag::LBRACK) _(Tag::SEMICON), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
         }
-        Fun *fun = new Fun(ext, t, name, paraList);
+        auto fun = make_shared<Fun>(ext, t, name, paraList);
         funtail(fun);
-        symtab.leave();
+        symtab->leave();
     }
     else {
-        symtab.addVar(varrdef(ext, t, false, name));
+        symtab->addVar(varrdef(ext, t, false, name));
         deflist(ext, t);
     }
 }
@@ -239,7 +239,7 @@ void Parser::idtail(bool ext, Tag t, [[maybe_unused]] bool ptr, std::string_view
 /**
  * <paradatatail> -> lbrack rbrack | lbrack num rbrack | ^
  */
-Var *Parser::paradatatail(Tag t, string &name) {
+shared_ptr<Var> Parser::paradatatail(Tag t, string &name) {
     if (match(Tag::LBRACK)) {
         int len = 1;
         if (F(Tag::NUM)) {
@@ -249,15 +249,15 @@ Var *Parser::paradatatail(Tag t, string &name) {
         if (!match(Tag::RBRACK)) {
             recovery(F(Tag::COMMA) _(Tag::RPAREN), SynError::RBRACK_LOST, SynError::RBRACK_WRONG);
         }
-        return new Var(symtab.getScopePath(), false, t, name, len);
+        return make_shared<Var>(symtab->getScopePath(), false, t, name, len);
     }
-    return new Var(symtab.getScopePath(), false, t, false, name);
+    return make_shared<Var>(symtab->getScopePath(), false, t, false, name);
 }
 
 /**
  * <paradata> -> mul ident | ident <paradatatail>
  */
-Var *Parser::paradata(Tag t) {
+shared_ptr<Var> Parser::paradata(Tag t) {
     string name;
     if (match(Tag::MUL)) {
         if (F(Tag::ID)) {
@@ -267,7 +267,7 @@ Var *Parser::paradata(Tag t) {
         else {
             recovery(F(Tag::COMMA) _(Tag::RPAREN), SynError::ID_LOST, SynError::ID_WRONG);
         }
-        return new Var(symtab.getScopePath(), false, t, true, name);
+        return make_shared<Var>(symtab->getScopePath(), false, t, true, name);
     }
     else if (F(Tag::ID)) {
         name = static_cast<Id *>(look.get())->name;
@@ -275,19 +275,19 @@ Var *Parser::paradata(Tag t) {
         return paradatatail(t, name);
     }
     recovery(F(Tag::COMMA) _(Tag::RPAREN) _(Tag::LBRACK), SynError::ID_LOST, SynError::ID_WRONG);
-    return new Var(symtab.getScopePath(), false, t, false, name);
+    return make_shared<Var>(symtab->getScopePath(), false, t, false, name);
 }
 
 /**
  * <para> -> <type> <paradata> <paralist> | ^
  */
-void Parser::para(vector<Var *>& list) {
+void Parser::para(vector<shared_ptr<Var>>& list) {
     if (F(Tag::RPAREN)) {
         return;
     }
     Tag t = type();
-    Var *v = paradata(t);
-    symtab.addVar(v);
+    shared_ptr<Var> v = paradata(t);
+    symtab->addVar(v);
     list.emplace_back(v);
     paralist(list);
 }
@@ -295,11 +295,11 @@ void Parser::para(vector<Var *>& list) {
 /**
  * <paralist> -> comma <type> <paradata> <paralist> | ^
  */
-void Parser::paralist(vector<Var *>&list) {
+void Parser::paralist(vector<shared_ptr<Var>>&list) {
     if (match(Tag::COMMA)) {
         Tag t = type();
-        Var *v = paradata(t);
-        symtab.addVar(v);
+        shared_ptr<Var> v = paradata(t);
+        symtab->addVar(v);
         list.emplace_back(v);
         paralist(list);
     }
@@ -308,14 +308,14 @@ void Parser::paralist(vector<Var *>&list) {
 /**
  * <funtail> -> <block> | semicon
  */
-void Parser::funtail(Fun *f) {
+void Parser::funtail(shared_ptr<Fun> f) {
     if (match(Tag::SEMICON)) {
-        symtab.decFun(f);
+        symtab->decFun(f);
     }
     else {
-        symtab.defFun(f);
+        symtab->defFun(f);
         block();
-        symtab.endDefFun();
+        symtab->endDefFun();
     }
 }
 
@@ -352,7 +352,7 @@ void Parser::subprogram() {
  */
 void Parser::localdef() {
     Tag t = type();
-    symtab.addVar(defdata(false, t));
+    symtab->addVar(defdata(false, t));
     deflist(false, t);
 }
 
@@ -386,7 +386,7 @@ void Parser::statement() {
         break;
 
     case Tag::KW_BREAK:
-        ir.genBreak();              // 产生 break 语句
+        ir->genBreak();              // 产生 break 语句
         move();
         if (!match(Tag::SEMICON)) {
             recovery(TYPE_FIRST || STATEMENT_FIRST || F(Tag::RBRACE), SynError::SEMICON_LOST, SynError::SEMICON_WRONG);
@@ -394,7 +394,7 @@ void Parser::statement() {
         break;
 
     case Tag::KW_CONTINUE:
-        ir.genContinue();           // 产生 continue 语句
+        ir->genContinue();           // 产生 continue 语句
         move();
         if (!match(Tag::SEMICON)) {
             recovery(TYPE_FIRST || STATEMENT_FIRST || F(Tag::RBRACE), SynError::SEMICON_LOST, SynError::SEMICON_WRONG);
@@ -403,7 +403,7 @@ void Parser::statement() {
 
     case Tag::KW_RETURN:
         move();
-        ir.genReturn(altexpr());    // 产生 return 语句
+        ir->genReturn(altexpr());    // 产生 return 语句
         if (!match(Tag::SEMICON)) {
             recovery(TYPE_FIRST || STATEMENT_FIRST || F(Tag::RBRACE), SynError::SEMICON_LOST, SynError::SEMICON_WRONG);
         }
@@ -422,17 +422,17 @@ void Parser::statement() {
  * <block> -> <block> | <statement>
  */
 void Parser::whilestat() {
-    symtab.enter();
+    symtab->enter();
     shared_ptr<InterInst> _while, _exit;      // 标签
 
-    ir.genWhileHead(_while, _exit); // while 循环头部
+    ir->genWhileHead(_while, _exit); // while 循环头部
     match(Tag::KW_WHILE);
 
     if (!match(Tag::LPAREN)) {
         recovery(EXPR_FIRST || F(Tag::RPAREN), SynError::LPAREN_LOST, SynError::LPAREN_WRONG);
     }
-    Var *cond = altexpr();
-    ir.genWhileCond(cond, _exit);   // while 条件
+    shared_ptr<Var> cond = altexpr();
+    ir->genWhileCond(cond, _exit);   // while 条件
     if (!match(Tag::RPAREN)) {
         recovery(F(Tag::LBRACE), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
     }
@@ -444,8 +444,8 @@ void Parser::whilestat() {
         statement();
     }
 
-    ir.genWhileTail(_while, _exit); // while 尾部
-    symtab.leave();
+    ir->genWhileTail(_while, _exit); // while 尾部
+    symtab->leave();
 }
 
 
@@ -454,9 +454,9 @@ void Parser::whilestat() {
  * <block> -> <block> | <statement>
 */
 void Parser::dowhilestat() {
-    symtab.enter();
+    symtab->enter();
     shared_ptr<InterInst> _do, _exit;         // 标签
-    ir.genDoWhileHead(_do, _exit);  // do-while 头部
+    ir->genDoWhileHead(_do, _exit);  // do-while 头部
 
     match(Tag::KW_DO);
     if (F(Tag::LBRACE)) {
@@ -473,8 +473,8 @@ void Parser::dowhilestat() {
         recovery(EXPR_FIRST || F(Tag::RPAREN), SynError::LPAREN_LOST, SynError::LPAREN_WRONG);
     }
 
-    symtab.leave();
-    Var *cond = altexpr();
+    symtab->leave();
+    shared_ptr<Var> cond = altexpr();
     if (!match(Tag::RPAREN)) {
         recovery(F(Tag::SEMICON), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
     }
@@ -482,7 +482,7 @@ void Parser::dowhilestat() {
     if (!match(Tag::SEMICON)) {
         recovery(TYPE_FIRST || STATEMENT_FIRST || F(Tag::RBRACE), SynError::SEMICON_LOST, SynError::SEMICON_WRONG);
     }
-    ir.genDoWhileTail(cond, _do, _exit);    // do-while 尾部
+    ir->genDoWhileTail(cond, _do, _exit);    // do-while 尾部
 }
 
 /**
@@ -490,7 +490,7 @@ void Parser::dowhilestat() {
  * <block> -> <block> | <statement>
 */
 void Parser::forstat() {
-    symtab.enter();
+    symtab->enter();
     shared_ptr<InterInst> _for, _exit, _step, _block;   // 标签
 
     match(Tag::KW_FOR);
@@ -499,9 +499,9 @@ void Parser::forstat() {
     }
 
     forinit();                  // 初始语句
-    ir.genForHead(_for, _exit); // for 循环头部
-    Var *cond = altexpr();      // 循环条件
-    ir.genForCondBegin(cond, _step, _block, _exit); // for 循环条件开始部分
+    ir->genForHead(_for, _exit); // for 循环头部
+    shared_ptr<Var> cond = altexpr();      // 循环条件
+    ir->genForCondBegin(cond, _step, _block, _exit); // for 循环条件开始部分
 
     if (!match(Tag::SEMICON)) {
         recovery(EXPR_FIRST, SynError::SEMICON_LOST, SynError::SEMICON_WRONG);
@@ -511,7 +511,7 @@ void Parser::forstat() {
     if (!match(Tag::RPAREN)) {
         recovery(F(Tag::LBRACE), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
     }
-    ir.genForCondEnd(_for, _block); // for 循环条件结束部分
+    ir->genForCondEnd(_for, _block); // for 循环条件结束部分
     if (F(Tag::LBRACE)) {
         block();
     }
@@ -519,8 +519,8 @@ void Parser::forstat() {
         statement();
     }
 
-    ir.genForTail(_step, _exit);    // for 循环尾部
-    symtab.leave();
+    ir->genForTail(_step, _exit);    // for 循环尾部
+    symtab->leave();
 }
 
 /**
@@ -542,7 +542,7 @@ void Parser::forinit() {
  * <ifstat> -> rsv_if lparen <expr> rparen <block> <elsestat>
  */
 void Parser::ifstat() {
-    symtab.enter();
+    symtab->enter();
     shared_ptr<InterInst> _else, _exit;
 
     match(Tag::KW_IF);
@@ -550,8 +550,8 @@ void Parser::ifstat() {
         recovery(EXPR_FIRST, SynError::LPAREN_LOST, SynError::LPAREN_WRONG);
     }
 
-    Var *cond = expr();
-    ir.genIfHead(cond, _else);
+    shared_ptr<Var> cond = expr();
+    ir->genIfHead(cond, _else);
 
     if (!match(Tag::RPAREN)) {
         recovery(F(Tag::LBRACE), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
@@ -563,13 +563,13 @@ void Parser::ifstat() {
     else {
         statement();
     }
-    symtab.leave();
+    symtab->leave();
 
-    ir.genElseHead(_else, _exit);
+    ir->genElseHead(_else, _exit);
     if (F(Tag::KW_ELSE)) {
         elsestat();
     }
-    ir.genElseTail(_exit);
+    ir->genElseTail(_exit);
 }
 
 /**
@@ -577,7 +577,7 @@ void Parser::ifstat() {
  */
 void Parser::elsestat() {
     if (match(Tag::KW_ELSE)) {
-        symtab.enter();
+        symtab->enter();
 
         if (F(Tag::LBRACE)) {
             block();
@@ -586,7 +586,7 @@ void Parser::elsestat() {
             statement();
         }
 
-        symtab.leave();
+        symtab->leave();
     }
 }
 
@@ -594,19 +594,19 @@ void Parser::elsestat() {
  * <switchstat> -> rsv_switch lparen <expr> rparen lbrac <casestat> rbrac
  */
 void Parser::switchstat() {
-    symtab.enter();
+    symtab->enter();
 
     shared_ptr<InterInst> _exit;
-    ir.genSwitchHead(_exit);
+    ir->genSwitchHead(_exit);
 
     match(Tag::KW_SWITCH);
     if (!match(Tag::LPAREN)) {
         recovery(EXPR_FIRST, SynError::LPAREN_LOST, SynError::LPAREN_WRONG);
     }
 
-    Var *cond = expr();
+    shared_ptr<Var> cond = expr();
     if (cond->isRef()) {    // switch(*p), switch(a[0])
-        cond = ir.genAssign(cond);
+        cond = ir->genAssign(cond);
     }
     if (!match(Tag::RPAREN)) {
         recovery(F(Tag::LBRACE), SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
@@ -618,30 +618,30 @@ void Parser::switchstat() {
     if (!match(Tag::RBRACE)) {
         recovery(TYPE_FIRST || STATEMENT_FIRST, SynError::RBRACE_LOST, SynError::RBRACE_WRONG);
     }
-    ir.genSwitchTail(_exit);
+    ir->genSwitchTail(_exit);
 
-    symtab.leave();
+    symtab->leave();
 }
 
 /**
  * <casestat> -> rsv_case <caselabel> colon <subprogram> <casestat>
  *             | rsv_default colon <subprogram>
  */
-void Parser::casestat(Var *cond) {
+void Parser::casestat(shared_ptr<Var> cond) {
     if (match(Tag::KW_CASE)) {
         shared_ptr<InterInst> _case_exit;
-        Var *lb = caselabel();
-        ir.genCaseHead(cond, lb, _case_exit);
+        shared_ptr<Var> lb = caselabel();
+        ir->genCaseHead(cond, lb, _case_exit);
 
         if (!match(Tag::COLON)) {
             recovery(TYPE_FIRST || STATEMENT_FIRST, SynError::COLON_LOST, SynError::COLON_WRONG);
         }
 
-        symtab.enter();
+        symtab->enter();
         subprogram();
-        symtab.leave();
+        symtab->leave();
 
-        ir.genCaseTail(_case_exit);
+        ir->genCaseTail(_case_exit);
         casestat(cond);
     }
     else if (match(Tag::KW_DEFAULT)) {
@@ -649,23 +649,23 @@ void Parser::casestat(Var *cond) {
             recovery(TYPE_FIRST || STATEMENT_FIRST, SynError::COLON_LOST, SynError::COLON_WRONG);
         }
 
-        symtab.enter();
+        symtab->enter();
         subprogram();
-        symtab.leave();
+        symtab->leave();
     }
 }
 
 /**
  * <caselabel> -> <literal>
  */
-Var *Parser::caselabel() {
+shared_ptr<Var> Parser::caselabel() {
     return literal();
 }
 
 /**
  * <altexpr> -> <expr> | ^
  */
-Var *Parser::altexpr() {
+shared_ptr<Var> Parser::altexpr() {
     if (EXPR_FIRST) {
         return expr();
     }
@@ -675,25 +675,25 @@ Var *Parser::altexpr() {
 /**
  * <expr> -> <assexpr>
  */
-Var *Parser::expr() {
+shared_ptr<Var> Parser::expr() {
     return assexpr();
 }
 
 /**
  * <assexpr> -> <orexpr> <asstail>
  */
-Var *Parser::assexpr() {
-    Var *lval = orexpr();
+shared_ptr<Var> Parser::assexpr() {
+    shared_ptr<Var> lval = orexpr();
     return asstail(lval);
 }
 
 /**
  * <asstail> -> assign <assexpr> | ^
  */
-Var *Parser::asstail(Var *lval) {
+shared_ptr<Var> Parser::asstail(shared_ptr<Var> lval) {
     if (match(Tag::ASSIGN)) {
-        Var *rval = assexpr();
-        Var *result = ir.genTwoOp(lval, Tag::ASSIGN, rval);
+        shared_ptr<Var> rval = assexpr();
+        shared_ptr<Var> result = ir->genTwoOp(lval, Tag::ASSIGN, rval);
         return asstail(result);
     }
     return lval;
@@ -702,18 +702,18 @@ Var *Parser::asstail(Var *lval) {
 /**
  * <orexpr> -> <andexpr> <ortail>
  */
-Var *Parser::orexpr() {
-    Var *lval = andexpr();
+shared_ptr<Var> Parser::orexpr() {
+    shared_ptr<Var> lval = andexpr();
     return ortail(lval);
 }
 
 /**
  * <ortail> -> or <andexpr> <ortail> | ^
  */
-Var *Parser::ortail(Var *lval) {
+shared_ptr<Var> Parser::ortail(shared_ptr<Var> lval) {
     if (match(Tag::OR)) {
-        Var *rval = andexpr();
-        Var *result = ir.genTwoOp(lval, Tag::OR, rval);
+        shared_ptr<Var> rval = andexpr();
+        shared_ptr<Var> result = ir->genTwoOp(lval, Tag::OR, rval);
         return ortail(result);
     }
     return lval;
@@ -722,18 +722,18 @@ Var *Parser::ortail(Var *lval) {
 /**
  * <andexpr> -> <cmpexpr> <andtail>
  */
-Var *Parser::andexpr() {
-    Var *lval = cmpexpr();
+shared_ptr<Var> Parser::andexpr() {
+    shared_ptr<Var> lval = cmpexpr();
     return andtail(lval);
 }
 
 /**
  * <andtail> -> and <cmpexpr> <andtail> | ^
  */
-Var *Parser::andtail(Var *lval) {
+shared_ptr<Var> Parser::andtail(shared_ptr<Var> lval) {
     if (match(Tag::AND)) {
-        Var *rval = cmpexpr();
-        Var *result = ir.genTwoOp(lval, Tag::AND, rval);
+        shared_ptr<Var> rval = cmpexpr();
+        shared_ptr<Var> result = ir->genTwoOp(lval, Tag::AND, rval);
         return andtail(result);
     }
     return lval;
@@ -742,19 +742,19 @@ Var *Parser::andtail(Var *lval) {
 /**
  * <cmpexpr> -> <aloexpr> <cmptail>
  */
-Var *Parser::cmpexpr() {
-    Var *lval = aloexpr();
+shared_ptr<Var> Parser::cmpexpr() {
+    shared_ptr<Var> lval = aloexpr();
     return cmptail(lval);
 }
 
 /**
  * <cmptail> -> <cmps> <aloexpr> <cmptail> | ^
  */
-Var *Parser::cmptail(Var *lval) {
+shared_ptr<Var> Parser::cmptail(shared_ptr<Var> lval) {
     if (F(Tag::GT) _(Tag::GE) _(Tag::LT) _(Tag::LE) _(Tag::EQU) _(Tag::NEQU)) {
         Tag opt = cmps();
-        Var *rval = aloexpr();
-        Var *result = ir.genTwoOp(lval, opt, rval);
+        shared_ptr<Var> rval = aloexpr();
+        shared_ptr<Var> result = ir->genTwoOp(lval, opt, rval);
         return cmptail(result);
     }
     return lval;
@@ -772,19 +772,19 @@ Tag Parser::cmps() {
 /**
  * <aloexpr> -> <item> <alotail>
  */
-Var *Parser::aloexpr() {
-    Var *lval = item();
+shared_ptr<Var> Parser::aloexpr() {
+    shared_ptr<Var> lval = item();
     return alotail(lval);
 }
 
 /**
  * <alotail> -> <adds> <item> <alotails> | ^
  */
-Var *Parser::alotail(Var *lval) {
+shared_ptr<Var> Parser::alotail(shared_ptr<Var> lval) {
     if (F(Tag::ADD) _(Tag::SUB)) {
         Tag opt = adds();
-        Var *rval = item();
-        Var *result = ir.genTwoOp(lval, opt, rval);
+        shared_ptr<Var> rval = item();
+        shared_ptr<Var> result = ir->genTwoOp(lval, opt, rval);
         return alotail(result);
     }
     return lval;
@@ -802,19 +802,19 @@ Tag Parser::adds() {
 /**
  * <item> -> <factor> <itemtail>
  */
-Var *Parser::item() {
-    Var *lval = factor();
+shared_ptr<Var> Parser::item() {
+    shared_ptr<Var> lval = factor();
     return itemtail(lval);
 }
 
 /**
  * <itemtail> -> <muls> <factor> <itemtail> | ^
  */
-Var *Parser::itemtail(Var *lval) {
+shared_ptr<Var> Parser::itemtail(shared_ptr<Var> lval) {
     if (F(Tag::MUL) _(Tag::DIV)_(Tag::MOD)) {
         Tag opt = muls();
-        Var *rval = factor();
-        Var *result = ir.genTwoOp(lval, opt, rval);
+        shared_ptr<Var> rval = factor();
+        shared_ptr<Var> result = ir->genTwoOp(lval, opt, rval);
         return itemtail(result);
     }
     return lval;
@@ -833,11 +833,11 @@ Tag Parser::muls() {
 /**
  * <factor> -> <lops> <factor> | <val>
  */
-Var *Parser::factor() {
+shared_ptr<Var> Parser::factor() {
     if (F(Tag::NOT)_(Tag::SUB)_(Tag::LEA)_(Tag::MUL)_(Tag::INC)_(Tag::DEC)) {
         Tag opt = lop();
-        Var *v = factor();
-        return ir.genOneOpLeft(opt, v);
+        shared_ptr<Var> v = factor();
+        return ir->genOneOpLeft(opt, v);
     }
     return val();
 }
@@ -855,11 +855,11 @@ Tag Parser::lop() {
 /**
  * <val> -> <elem> <rop>
  */
-Var *Parser::val() {
-    Var *v = elem();
+shared_ptr<Var> Parser::val() {
+    shared_ptr<Var> v = elem();
     if (F(Tag::INC)_(Tag::DEC)) {
         Tag opt = rop();
-        v = ir.genOneOpRight(v, opt);
+        v = ir->genOneOpRight(v, opt);
     }
     return v;
 }
@@ -877,8 +877,8 @@ Tag Parser::rop() {
 /**
  * <elem> -> ident <idexpr> | lparen <expr> rparen | <literal>
  */
-Var *Parser::elem() {
-    Var *v = nullptr;
+shared_ptr<Var> Parser::elem() {
+    shared_ptr<Var> v = nullptr;
 
     if (F(Tag::ID)) {
         string name = static_cast<Id *>(look.get())->name;
@@ -901,16 +901,16 @@ Var *Parser::elem() {
 /**
  * <literal> -> number | string | char
  */
-Var *Parser::literal() {
-    Var *v = nullptr;
+shared_ptr<Var> Parser::literal() {
+    shared_ptr<Var> v = nullptr;
 
     if (F(Tag::NUM)_(Tag::STR)_(Tag::CH)) {
-        v = new Var(look.get());
+        v = make_shared<Var>(look.get());
         if (F(Tag::STR)) {
-            symtab.addStr(v);
+            symtab->addStr(v);
         }
         else {
-            symtab.addVar(v);
+            symtab->addVar(v);
         }
         move();
     }
@@ -926,28 +926,28 @@ Var *Parser::literal() {
  *           | lparen <realarg> rparen
  *           | ^
  */
-Var *Parser::idexpr(const string &name) {
-    Var *v = nullptr;
+shared_ptr<Var> Parser::idexpr(const string &name) {
+    shared_ptr<Var> v = nullptr;
 
     if (match(Tag::LBRACK)) {
-        Var *index = expr();
+        shared_ptr<Var> index = expr();
         if (!match(Tag::RBRACK)) {
             recovery(LVAL_OPR, SynError::LBRACK_LOST, SynError::LBRACK_WRONG);
         }
-        Var *array = symtab.getVar(name);
-        v = ir.genArray(array, index);
+        shared_ptr<Var> array = symtab->getVar(name);
+        v = ir->genArray(array, index);
     }
     else if (match(Tag::LPAREN)) {
-        vector<Var *> args;
+        vector<shared_ptr<Var>> args;
         realarg(args);
         if (!match(Tag::RPAREN)) {
             recovery(RVAL_OPR, SynError::RPAREN_LOST, SynError::RPAREN_WRONG);
         }
-        Fun *function = symtab.getFun(name, args);
-        v = ir.genCall(function, args);
+        shared_ptr<Fun> function = symtab->getFun(name, args);
+        v = ir->genCall(function, args);
     }
     else {
-        v = symtab.getVar(name);
+        v = symtab->getVar(name);
     }
 
     return v;
@@ -956,7 +956,7 @@ Var *Parser::idexpr(const string &name) {
 /**
  * <realarg> -> <arg> <arglist> | ^
  */
-void Parser::realarg(vector<Var *> &args) {
+void Parser::realarg(vector<shared_ptr<Var>> &args) {
     if (EXPR_FIRST) {
         args.emplace_back(arg());
         arglist(args);
@@ -966,7 +966,7 @@ void Parser::realarg(vector<Var *> &args) {
 /**
  * <arglist> -> comma <arg> <arglist> | ^
  */
-void Parser::arglist(vector<Var *> &args) {
+void Parser::arglist(vector<shared_ptr<Var>> &args) {
     if (match(Tag::COMMA)) {
         args.emplace_back(arg());
         arglist(args);
@@ -976,6 +976,6 @@ void Parser::arglist(vector<Var *> &args) {
 /**
  * <arg> -> <expr>
  */
-Var *Parser::arg() {
+shared_ptr<Var> Parser::arg() {
     return expr();
 }

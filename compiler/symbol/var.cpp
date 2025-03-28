@@ -11,7 +11,7 @@ using namespace std;
 #define SEMERROR(code, name) Error::semError(code, name)
 
 
-Var *Var::getVoid() {
+shared_ptr<Var> Var::getVoid() {
     return SymTab::voidVar;
 }
 
@@ -25,11 +25,11 @@ Var::Var() {
     isPtr = true;       // 消除基本类型标志
 }
 
-Var *Var::getTrue() {
+shared_ptr<Var> Var::getTrue() {
     return SymTab::one;
 }
 
-Var *Var::getStep(const Var *v) {
+shared_ptr<Var> Var::getStep(const shared_ptr<Var> v) {
     if (v->isBase()) {
         return SymTab::one;
     }
@@ -72,7 +72,7 @@ Var::Var(const vector<int> &sp, Tag t, bool ptr) {
 }
 
 // 拷贝出一个临时变量
-Var::Var(const vector<int> &sp, const Var *v) {
+Var::Var(const vector<int> &sp, const shared_ptr<Var> v) {
     clear();
     scopePath = sp;
     setType(v->type);
@@ -82,7 +82,7 @@ Var::Var(const vector<int> &sp, const Var *v) {
 }
 
 // 变量, 指针
-Var::Var(const vector<int>& sp, bool ext, Tag t, bool ptr, std::string_view name, Var *init) {
+Var::Var(const vector<int>& sp, bool ext, Tag t, bool ptr, std::string_view name, shared_ptr<Var> init) {
     clear();
     scopePath = sp;
     setExtern(ext);
@@ -192,7 +192,7 @@ void Var::setArray(int len) {
 }
 
 bool Var::setInit() {
-    Var *init = initData;
+    shared_ptr<Var> init = initData;
     if (!init) {
         return false;           // 没有初始化表达式
     }
@@ -224,7 +224,7 @@ bool Var::setInit() {
     return false;
 }
 
-Var *Var::getInitData() {
+shared_ptr<Var> Var::getInitData() {
     return initData;
 }
 
@@ -260,11 +260,11 @@ bool Var::getArray() const {
     return isArray;
 }
 
-void Var::setPointer(Var *p) {
+void Var::setPointer(shared_ptr<Var> p) {
     ptr = p;
 }
 
-Var *Var::getPointer() {
+shared_ptr<Var> Var::getPointer() {
     return ptr;
 }
 

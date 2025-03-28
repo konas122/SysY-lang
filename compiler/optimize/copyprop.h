@@ -25,8 +25,8 @@ class CopyPropagation
     void analyse();                 // 复写传播数据流分析
     bool translate(std::shared_ptr<Block> block);   // 复写传播传递函数
 
-    Var *__find(const Set &in, Var *var, Var *src) const;   // 递归检测 var 赋值的源头的内部实现
-    Var *find(const Set &in, Var *var) const;               // 递归检测 var 赋值的源头
+    std::shared_ptr<Var> __find(const Set &in, std::shared_ptr<Var> var, std::shared_ptr<Var> src) const;   // 递归检测 var 赋值的源头的内部实现
+    std::shared_ptr<Var> find(const Set &in, std::shared_ptr<Var> var) const;               // 递归检测 var 赋值的源头
 
 public:
     explicit CopyPropagation(std::shared_ptr<DFG> g);

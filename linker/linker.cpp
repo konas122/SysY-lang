@@ -11,11 +11,11 @@ using namespace LINK;
 extern bool showLink;
 
 
-Block::Block(unique_ptr<char[]>&& d, uint32_t off, uint32_t s)
+LinkBlock::LinkBlock(unique_ptr<char[]>&& d, uint32_t off, uint32_t s)
     : data(std::move(d)), offset(off), size(s)
 {}
 
-Block::~Block()
+LinkBlock::~LinkBlock()
 {}
 
 
@@ -55,7 +55,7 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
         if (name != ".bss") {
             auto buf = make_unique<char[]>(seg->sh_size);
             owner->getData(buf.get(), seg->sh_offset, seg->sh_size);
-            auto block = make_shared<Block>(std::move(buf), size, seg->sh_size);
+            auto block = make_shared<LinkBlock>(std::move(buf), size, seg->sh_size);
             blocks.emplace_back(block);
         }
         seg->sh_addr = base + size;
@@ -75,7 +75,7 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
 void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     uint32_t relOffset = relAddr - baseAddr;    // 同类合并段的数据偏移
     // 查找修正地址所在位置
-    shared_ptr<Block> b = nullptr;
+    shared_ptr<LinkBlock> b = nullptr;
     for (auto block : blocks) {
         if (block->offset <= relOffset && block->offset + block->size > relOffset) {
             b = block;
@@ -85,6 +85,8 @@ void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     assert(b != nullptr && "pointer b == nullptr");
     // 处理字节为 b->data[relOffset-b->offset]
     int *pAddr = reinterpret_cast<int *>(b->data.get() + relOffset - b->offset);
+    // assert(reinterpret_cast<uintptr_t>(pAddr) % alignof(int) == 0);
+
     if (type == R_386_32) { // 绝对地址修正
         if (showLink) {
             printf("绝对地址修正: 原地址=%08x\t", *pAddr);
@@ -272,6 +274,8 @@ void Linker::relocate() {
 void Linker::assemExe() {
     {
         int *p_id = reinterpret_cast<int *>(exe.ehdr.e_ident);
+        assert(reinterpret_cast<uintptr_t>(p_id) % alignof(int) == 0);
+
         *p_id = 0x464c457f;
         p_id++;
         *p_id = 0x010101;
@@ -411,7 +415,7 @@ void Linker::exportElf(const char *dir) {
         }
 
         if (segName != ".bss") {
-            shared_ptr<Block> old = nullptr;
+            shared_ptr<LinkBlock> old = nullptr;
             const char instPad[1] = {(char)0x90};
             for (auto block : sl->blocks) {
                 if (old != nullptr) {

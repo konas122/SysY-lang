@@ -24,11 +24,9 @@ void InterInst::init() {
     isDead = false;
 
     file = nullptr;
-
-    block = nullptr;
 }
 
-InterInst::InterInst(Operator op, Var *rs, Var *arg1, Var *arg2) {
+InterInst::InterInst(Operator op, shared_ptr<Var> rs, shared_ptr<Var> arg1, shared_ptr<Var> arg2) {
     init();
     this->op = op;
     this->result = rs;
@@ -36,7 +34,7 @@ InterInst::InterInst(Operator op, Var *rs, Var *arg1, Var *arg2) {
     this->arg2 = arg2;
 }
 
-InterInst::InterInst(Operator op, Fun *fun, Var *rs) {
+InterInst::InterInst(Operator op, shared_ptr<Fun> fun, shared_ptr<Var> rs) {
     init();
     this->op = op;
     this->result = rs;
@@ -44,7 +42,7 @@ InterInst::InterInst(Operator op, Fun *fun, Var *rs) {
     this->arg2 = nullptr;
 }
 
-InterInst::InterInst(Operator op, Var *arg1) {
+InterInst::InterInst(Operator op, shared_ptr<Var> arg1) {
     init();
     this->op = op;
     this->result = nullptr;
@@ -57,7 +55,7 @@ InterInst::InterInst() {
     label = GenIR::genLb();
 }
 
-InterInst::InterInst(Operator op, shared_ptr<InterInst> tar, Var *arg1, Var *arg2) {
+InterInst::InterInst(Operator op, shared_ptr<InterInst> tar, shared_ptr<Var> arg1, shared_ptr<Var> arg2) {
     init();
     this->op = op;
     this->target = tar;
@@ -65,14 +63,14 @@ InterInst::InterInst(Operator op, shared_ptr<InterInst> tar, Var *arg1, Var *arg
     this->arg2 = arg2;
 }
 
-void InterInst::replace(Operator op, Var *rs, Var *arg1, Var *arg2) {
+void InterInst::replace(Operator op, shared_ptr<Var> rs, shared_ptr<Var> arg1, shared_ptr<Var> arg2) {
     this->op = op;
     this->result = rs;
     this->arg1 = arg1;
     this->arg2 = arg2;
 }
 
-void InterInst::replace(Operator op, shared_ptr<InterInst> tar, Var *arg1, Var *arg2) {
+void InterInst::replace(Operator op, shared_ptr<InterInst> tar, shared_ptr<Var> arg1, shared_ptr<Var> arg2) {
     this->op = op;
     this->target = tar;
     this->arg1 = arg1;
@@ -361,11 +359,11 @@ shared_ptr<InterInst> InterInst::getTarget() {
     return target;
 }
 
-Var *InterInst::getResult() {
+shared_ptr<Var> InterInst::getResult() {
     return result;
 }
 
-void InterInst::setArg1(Var *arg1) {
+void InterInst::setArg1(shared_ptr<Var> arg1) {
     this->arg1 = arg1;
 }
 
@@ -373,11 +371,11 @@ bool InterInst::isDec() const {
     return op == Operator::OP_DEC;
 }
 
-Var *InterInst::getArg1() {
+shared_ptr<Var> InterInst::getArg1() {
     return arg1;
 }
 
-Var *InterInst::getArg2() {
+shared_ptr<Var> InterInst::getArg2() {
     return arg2;
 }
 
@@ -385,7 +383,7 @@ string InterInst::getLabel() {
     return label;
 }
 
-Fun *InterInst::getFun() {
+shared_ptr<Fun> InterInst::getFun() {
     return fun;
 }
 
@@ -393,7 +391,7 @@ Fun *InterInst::getFun() {
 #define emit(format, args...) fprintf(file, "\t" format "\n", ##args);
 
 
-void InterInst::loadVar(const string &reg32, const string &reg16, const Var *var) {
+void InterInst::loadVar(const string &reg32, const string &reg16, const shared_ptr<Var> var) {
     if (!var) {
         return;
     }
@@ -447,7 +445,7 @@ void InterInst::loadVar(const string &reg32, const string &reg16, const Var *var
     }
 }
 
-void InterInst::initVar(const Var *var) {
+void InterInst::initVar(const shared_ptr<Var> var) {
     if (!var) {
         return;
     }
@@ -477,7 +475,7 @@ void InterInst::initVar(const Var *var) {
     }
 }
 
-void InterInst::leaVar(const string &reg32, const Var *var) {
+void InterInst::leaVar(const string &reg32, const shared_ptr<Var> var) {
     if (!var) {
         return;
     }
@@ -493,7 +491,7 @@ void InterInst::leaVar(const string &reg32, const Var *var) {
     }
 }
 
-void InterInst::storeVar(const string &reg32, const string &reg16, const Var *var) {
+void InterInst::storeVar(const string &reg32, const string &reg16, const shared_ptr<Var> var) {
     if (!var) {
         return;
     }
