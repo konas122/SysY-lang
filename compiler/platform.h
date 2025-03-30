@@ -7,8 +7,7 @@ class Plat
 public:
     Plat() = delete;
     ~Plat() = delete;
-    Plat(const Plat &rhs) = delete;
-    Plat &operator=(const Plat &rhs) = delete;
+    const Plat &operator=(const Plat &&rhs) = delete;
 
     static const int regNum = 3;
     static const char *reg16Name[regNum];

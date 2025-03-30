@@ -14,8 +14,7 @@ class Keywords
 public:
     Keywords();
 
-    Keywords(const Keywords &rhs) = delete;
-    Keywords &operator=(const Keywords &rhs) = delete;
+    const Keywords &operator=(const Keywords &&rhs) = delete;
 
     Tag getTag(const std::string &name);
 };

@@ -22,8 +22,7 @@ class Scanner
     void showChar(const char ch) const;
 
 public:
-    Scanner(const Scanner &rhs) = delete;
-    Scanner &operator=(const Scanner &rhs) = delete;
+    const Scanner &operator=(const Scanner &&rhs) = delete;
 
     explicit Scanner(const std::string &name);
     ~Scanner();

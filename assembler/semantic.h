@@ -51,8 +51,7 @@ public:
     ~Table();
 
     Table() = default;
-    Table(const Table &rhs) = delete;
-    Table &operator=(const Table &rhs) = delete;
+    const Table &operator=(const Table &&rhs) = delete;
 };
 
 
@@ -66,8 +65,7 @@ struct ModRM
     ModRM();
     void init();
 
-    ModRM(const ModRM &rhs) = delete;
-    ModRM &operator=(const ModRM &rhs) = delete;
+    const ModRM &operator=(const ModRM &&rhs) = delete;
 };
 
 
@@ -81,8 +79,7 @@ struct SIB
     SIB();
     void init();
 
-    SIB(const SIB &rhs) = delete;
-    SIB &operator=(const SIB &rhs) = delete;
+    const SIB &operator=(const SIB &&rhs) = delete;
 };
 
 
@@ -99,8 +96,7 @@ struct Inst
     void setDisp(int d, int len);   // 设置 disp, 自动检测 disp 长度 (符号) , 及时是无符号地址值也无妨
     void writeDisp();
 
-    Inst(const Inst &rhs) = delete;
-    Inst &operator=(const Inst &rhs) = delete;
+    const Inst &operator=(const Inst &&rhs) = delete;
 };
 
 #endif

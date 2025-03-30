@@ -20,8 +20,7 @@ public:
     explicit Lexer(Scanner &sc);
     ~Lexer();
 
-    Lexer(const Lexer &rhs) = delete;
-    Lexer &operator=(const Lexer &rhs) = delete;
+    const Lexer &operator=(const Lexer &&rhs) = delete;
 
     std::unique_ptr<Token> tokenize();
 };

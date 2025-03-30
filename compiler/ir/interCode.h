@@ -15,8 +15,7 @@ class InterCode
 public:
     InterCode() = default;
 
-    InterCode(const InterCode &rhs) = delete;
-    InterCode &operator=(const InterCode &rhs) = delete;
+    const InterCode &operator=(const InterCode &&rhs) = delete;
 
     ~InterCode();
     void addInst(std::shared_ptr<InterInst> inst);

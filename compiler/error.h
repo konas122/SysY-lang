@@ -21,8 +21,7 @@ class Error
 
 public:
     Error() = delete;
-    Error(const Error &rhs) = delete;
-    Error &operator=(const Error &rhs) = delete;
+    const Error &operator=(const Error &&rhs) = delete;
 
     explicit Error(Scanner *sc);
 

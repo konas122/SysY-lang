@@ -38,8 +38,7 @@ class ConstPropagation
     void condJmpOpt();      // 条件跳转优化, 同时进行不可达代码消除
 
 public:
-    ConstPropagation(const ConstPropagation &rhs) = delete;
-    ConstPropagation &operator=(const ConstPropagation &rhs) = delete;
+    const ConstPropagation &operator=(const ConstPropagation &&rhs) = delete;
 
     ConstPropagation(std::shared_ptr<DFG> g, std::shared_ptr<SymTab> tab, const std::vector<std::shared_ptr<Var>> &paraVar); // 常量传播分析初始化
     void propagate();   // 执行常量传播

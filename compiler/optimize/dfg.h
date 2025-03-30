@@ -34,7 +34,7 @@ public:
 
     static std::shared_ptr<Block> create(const std::vector<std::shared_ptr<InterInst>> &codes);
 
-    Block &operator=(const Block &&) = delete;
+    const Block &operator=(const Block &&) = delete;
 
 private:
     void init(const std::vector<std::shared_ptr<InterInst>> &codes);

@@ -71,8 +71,7 @@ public:
     std::vector<std::shared_ptr<SymLink>> symDef;           // 所有符号定义信息 recv 字段 NULL 时标示该符号没有被任何文件引用, 否则指向本身 (同 prov)
 
 public:
-    Linker(const Linker &rhs) = delete;
-    Linker &operator=(const Linker &rhs) = delete;
+    const Linker &operator=(const Linker &&rhs) = delete;
 
     Linker();
     void addElf(const char *dir);   // 添加一个目标文件

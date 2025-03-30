@@ -24,8 +24,7 @@ public:
     Compiler() = default;
     ~Compiler() = default;
 
-    Compiler(const Compiler &rhs) = delete;
-    Compiler &operator=(const Compiler &rhs) = delete;
+    const Compiler &operator=(const Compiler &&rhs) = delete;
 
     void compile(const std::string &file);
 };

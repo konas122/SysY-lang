@@ -29,8 +29,7 @@ class LiveVar
     bool translate(std::shared_ptr<Block> block);   // 活跃变量传递函数
 
 public:
-    LiveVar(const LiveVar &rhs) = delete;
-    LiveVar &operator=(const LiveVar &rhs) = delete;
+    const LiveVar &operator=(const LiveVar &&rhs) = delete;
 
     LiveVar(std::shared_ptr<DFG> g, std::shared_ptr<SymTab> t, const std::vector<std::shared_ptr<Var>> &paraVar);
 

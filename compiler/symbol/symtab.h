@@ -35,8 +35,7 @@ public:
     static std::shared_ptr<Var> one;
     static std::shared_ptr<Var> four;
 
-    SymTab(const SymTab &rhs) = delete;
-    SymTab &operator=(const SymTab &rhs) = delete;
+    const SymTab &operator=(const SymTab &&rhs) = delete;
 
     SymTab();
     ~SymTab();
