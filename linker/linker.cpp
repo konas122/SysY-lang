@@ -75,7 +75,7 @@ void SegList::allocAddr(const string &name, uint32_t &base, uint32_t &off) {
 void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     uint32_t relOffset = relAddr - baseAddr;    // 同类合并段的数据偏移
     // 查找修正地址所在位置
-    shared_ptr<LinkBlock> b = nullptr;
+    shared_ptr<LinkBlock> b;
     for (auto block : blocks) {
         if (block->offset <= relOffset && block->offset + block->size > relOffset) {
             b = block;
@@ -84,23 +84,27 @@ void SegList::relocAddr(uint32_t relAddr, uint8_t type, uint32_t symAddr) {
     }
     assert(b != nullptr && "pointer b == nullptr");
     // 处理字节为 b->data[relOffset-b->offset]
-    int *pAddr = reinterpret_cast<int *>(b->data.get() + relOffset - b->offset);
-    // assert(reinterpret_cast<uintptr_t>(pAddr) % alignof(int) == 0);
+    char *pAddr = reinterpret_cast<char *>(b->data.get() + relOffset - b->offset);
+
+    uint32_t addr = 0;
+    std::memcpy(&addr, pAddr, sizeof(uint32_t));        // 相当于 `addr=*pAddr`, 但要避免未定义行为
 
     if (type == R_386_32) { // 绝对地址修正
         if (showLink) {
-            printf("绝对地址修正: 原地址=%08x\t", *pAddr);
+            printf("绝对地址修正: 原地址=%08x\t", addr);
         }
-        *pAddr = symAddr;
+        std::memcpy(pAddr, &symAddr, sizeof(uint32_t)); // 相当于 `*pAddr=symAddr`, 但要避免未定义行为
+        std::memcpy(&addr, pAddr, sizeof(uint32_t));    // 相当于 `addr=*pAddr`, 但要避免未定义行为
         if (showLink) {
-            printf("修正后地址=%08x\n", *pAddr);
+            printf("修正后地址=%08x\n", addr);
         }
     }
     else if (type == R_386_PC32) {  // 相对地之修正
         if (showLink) {
-            printf("相对地址修正: 原地址=%08x\t", *pAddr);
+            printf("相对地址修正: 原地址=%08x\t", addr);
         }
-        *pAddr = symAddr - relAddr + *pAddr;
+        addr = symAddr - relAddr + addr;
+        std::memcpy(pAddr, &addr, sizeof(uint32_t));    // 相当于 `*pAddr=symAddr`, 但要避免未定义行为
         if (showLink) {
             printf("修正后地址=%08x\n", *pAddr);
         }
